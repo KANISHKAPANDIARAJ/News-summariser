@@ -1,0 +1,51 @@
+<!-- filepath: /c:/Users/kanis/Downloads/news sum/Dhanvanth-main/new_summarizer/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News Summarizer</title>
+</head>
+<body>
+    <h1>News Summarizer</h1>
+    <form method="POST">
+        <label for="input_type">Input Type:</label>
+        <select name="input_type" id="input_type">
+            <option value="url">URL</option>
+            <option value="text">Text</option>
+        </select>
+        <br><br>
+        <div id="url_input">
+            <label for="url">URL:</label>
+            <input type="text" name="url" id="url">
+        </div>
+        <div id="text_input" style="display: none;">
+            <label for="text">Text:</label>
+            <textarea name="text" id="text" rows="10" cols="50"></textarea>
+        </div>
+        <br>
+        <button type="submit">Summarize</button>
+    </form>
+    <br>
+    {% if summary %}
+        <h2>Summary:</h2>
+        <p>{{ summary }}</p>
+    {% endif %}
+    {% if error %}
+        <h2>Error:</h2>
+        <p>{{ error }}</p>
+    {% endif %}
+    <script>
+        document.getElementById('input_type').addEventListener('change', function() {
+            var inputType = this.value;
+            if (inputType === 'url') {
+                document.getElementById('url_input').style.display = 'block';
+                document.getElementById('text_input').style.display = 'none';
+            } else {
+                document.getElementById('url_input').style.display = 'none';
+                document.getElementById('text_input').style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
