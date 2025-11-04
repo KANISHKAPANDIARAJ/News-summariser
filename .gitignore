@@ -1,0 +1,7 @@
+# .gitignore
+venv/
+__pycache__/
+*.pt
+*.bin
+*.pkl
+*.mp3
