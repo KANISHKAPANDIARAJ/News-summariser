@@ -1,0 +1,212 @@
+/* Variables and base */
+:root {
+  --primary-color: #4caf50;
+  --primary-hover: #45a049;
+  --primary-color-light: #bbdefb;
+  --primary-color-dark: #1976d2;
+  --btn-bg-color: #2196f3;
+  --btn-hover-bg-color: #1976d2;
+  --container-bg: #ffffff;
+  --input-border: #ddd;
+  --summary-bg: #f1f1f1;
+  --header-bg: linear-gradient(135deg, #4caf50, #81c784);
+  --text-color: #333;
+}
+
+/* Global */
+body {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  transition: background 0.4s ease;
+}
+body.light-theme {
+  background: linear-gradient(135deg, #f4f4fc 0%, #b3f0ff 100%);
+  color: #222;
+}
+body.dark-theme {
+  background: linear-gradient(135deg, #21243d 0%, #48456d 100%);
+  color: #f1f2f6;
+}
+body.blue-theme {
+  background: linear-gradient(135deg, #0081ff 0%, #47eaff 100%);
+  color: #fff;
+}
+body.purple-theme {
+  background: linear-gradient(135deg, #9e5fff 0%, #f979b4 100%);
+  color: #fff;
+}
+
+/* Card */
+.card {
+  max-width: 650px;
+  margin: 40px auto 30px auto;
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 30px 30px;
+  box-shadow: 0 4px 36px rgba(80, 90, 150, 0.12);
+  position: relative;
+  transition: background 0.4s, color 0.3s;
+}
+body.dark-theme .card,
+body.blue-theme .card,
+body.purple-theme .card {
+  background: rgba(28, 30, 54, 0.93);
+  color: #fff;
+}
+
+/* Theme toggle */
+.theme-toggle-group {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  display: flex;
+  gap: 14px;
+}
+.theme-btn {
+  background: none;
+  border: none;
+  font-size: 23px;
+  padding: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  color: var(--primary-color);
+  user-select: none;
+  outline: none;
+}
+.theme-btn.active {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px var(--primary-color-dark);
+}
+.theme-btn:hover:not(.active) {
+  transform: scale(1.1);
+  box-shadow: 0 0 7px var(--primary-color-light);
+}
+.theme-btn.active,
+.theme-btn:hover {
+  background: #e3f2fd;
+  box-shadow: 0 0 0 2px #47eaff;
+  transform: scale(1.15);
+}
+body.dark-theme .theme-btn.active,
+body.blue-theme .theme-btn.active,
+body.purple-theme .theme-btn.active {
+  background: #48456d;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+/* Form controls */
+input[type=text],
+textarea,
+select {
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  background: transparent;
+  color: inherit;
+  transition: border-color 0.3s;
+}
+input[type=text]:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+/* Submit button */
+button[type=submit] {
+  background: var(--btn-bg-color);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 22px;
+  padding: 15px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 20px;
+  transition: background 0.3s;
+}
+button[type=submit]:hover {
+  background: var(--btn-hover-bg-color);
+}
+
+/* Summary box */
+.summary-box {
+  margin-top: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  white-space: pre-wrap;
+}
+body.dark-theme .summary-box,
+body.blue-theme .summary-box,
+body.purple-theme .summary-box {
+  color: #e1e1e1;
+  background-color: rgba(28, 30, 54, 0.93);
+}
+
+/* Key sentences */
+.summary-box ul {
+  list-style: disc inside;
+  padding-left: 10px;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+.summary-box ul li {
+  margin-bottom: 12px; /* Increased space between bullets */
+}
+
+/* Buttons */
+.action-btn {
+  background: var(--btn-bg-color);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+  margin-right: 10px;
+  transition: background 0.3s ease;
+  user-select: none;
+  outline: none;
+}
+.action-btn:hover {
+  background: var(--btn-hover-bg-color);
+}
+
+/* Social share buttons */
+.action-btn[href] {
+  text-decoration: none;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+.action-btn[href]:hover {
+  opacity: 0.85;
+}
+
+/* Recent summaries links */
+.recent-summary-link {
+  color: var(--btn-bg-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.recent-summary-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .card {
+    width: 95%;
+    padding: 20px 15px;
+  }
+}

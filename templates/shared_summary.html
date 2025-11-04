@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shared Summary - News Summarizer</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body class="blue-theme">
+  <div class="card">
+    <div class="theme-toggle-group" aria-label="Theme Toggle">
+      <button class="theme-btn" id="btn-light" title="Light Theme">☀️</button>
+      <button class="theme-btn" id="btn-dark" title="Dark Theme">🌙</button>
+      <button class="theme-btn" id="btn-blue" title="Blue Theme">💧</button>
+      <button class="theme-btn" id="btn-purple" title="Purple Theme">🟣</button>
+    </div>
+
+    <h1 style="font-size: 40px;">Shared Summary</h1>
+
+    {% if url %}
+      <p><strong>Source URL:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
+    {% endif %}
+
+    {% if sentiment is mapping and 'label' in sentiment and 'score' in sentiment %}
+        <p><strong>Sentiment:</strong> {{ sentiment.label }} ({{ (sentiment.score * 100) | round(1) }}%)</p>
+    {% endif %}
+
+
+    <div class="summary-box">
+      <h2 style="font-size: 20px; text-align: center;">Summary</h2>
+      <p id="summary-text" style="white-space: pre-wrap;">{{ summary }}</p>
+    </div>
+    <button id="listenBtn" class="action-btn" style="margin-top:10px;">🔊 Listen</button>
+    <button id="download-summary" class="action-btn" style="margin-top:10px;">⬇️ Download Summary</button>
+
+
+    {% if key_sentences %}
+    <div class="summary-box" style="margin-top:10px;">
+      <button id="listenKeySentences" class="action-btn" style="margin-bottom: 10px;">🔊 Listen Key Sentences</button>
+      <h3 style="font-size: 20px; text-align: center;">Key Sentences</h3>
+      <ul>
+        {% for s in key_sentences %}
+          <li>{{ s }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <section style="margin-top:20px;">
+      <input type="text" id="shareLink" value="{{ request.url }}" readonly style="width:80%; padding:8px;" />
+      <button id="copyLinkBtn" class="action-btn">📋 Copy Link</button>
+      <span id="copyStatus" style="color:whitesmoke; display:none; margin-left:10px;">Copied!</span>
+
+      <div style="margin-top: 15px;">
+        <a href="https://twitter.com/intent/tweet?url={{ request.url }}" target="_blank" title="Share on Twitter" class="action-btn" 
+          style="display:inline-block; margin-right:8px;">🐣Twitter</a>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" title="Share on LinkedIn" class="action-btn"
+          style="display:inline-block; margin-right:8px;">🔗 LinkedIn</a>
+        <a href="https://api.whatsapp.com/send?text={{ request.url }}" target="_blank" title="Share on WhatsApp" class="action-btn"> 💬WhatsApp</a>
+      </div>
+    </section>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script>
+    // Copy share link button
+    document.getElementById("copyLinkBtn").addEventListener("click", () => {
+      const copyText = document.getElementById("shareLink");
+      copyText.select();
+      document.execCommand("copy");
+      const status = document.getElementById("copyStatus");
+      status.style.display = "inline";
+      setTimeout(() => { status.style.display = "none"; }, 1500);
+    });
+
+    // Download summary button
+    const downloadBtn = document.getElementById('download-summary');
+    const summaryEl = document.getElementById('summary-text');
+    if (downloadBtn && summaryEl) {
+      downloadBtn.addEventListener('click', () => {
+        const text = summaryEl.textContent || '';
+        if (!text.trim()) {
+          alert('No summary to download.');
+          return;
+        }
+        const blob = new Blob([text], {type: 'text/plain'});
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'summary.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      });
+    }
+
+    // Listen to key sentences button
+    const listenKeyBtn = document.getElementById('listenKeySentences');
+    const keySentencesEls = document.querySelectorAll('.summary-box ul li');
+    if (listenKeyBtn && keySentencesEls.length) {
+      listenKeyBtn.addEventListener('click', () => {
+        const allSentences = Array.from(keySentencesEls).map(li => li.textContent).join('. ');
+        const utter = new SpeechSynthesisUtterance(allSentences);
+        utter.lang = 'en-US';
+        speechSynthesis.speak(utter);
+      });
+    }
+  </script>
+</body>
+</html>
