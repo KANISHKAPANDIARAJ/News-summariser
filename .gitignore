@@ -5,3 +5,4 @@ __pycache__/
 *.bin
 *.pkl
 *.mp3
+*.pyc
