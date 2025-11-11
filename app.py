@@ -209,7 +209,7 @@ def index():
                         recent_ids.remove(sum_id)
                     recent_ids.insert(0, sum_id)
                     recent_ids = recent_ids[:5]
-                    response = make_response(redirect(url_for("shared_summary", sum_id=sum_id)))
+                    response = make_response(redirect(url_for("shared_summary", sum_id=sum_id, lang=language)))
                     response.set_cookie("recent_summaries", ",".join(recent_ids), max_age=7 * 24 * 3600)
                     return response
                 else:
@@ -246,7 +246,7 @@ def index():
                     recent_ids.remove(sum_id)
                 recent_ids.insert(0, sum_id)
                 recent_ids = recent_ids[:5]
-                response = make_response(redirect(url_for("shared_summary", sum_id=sum_id)))
+                response = make_response(redirect(url_for("shared_summary", sum_id=sum_id, lang=language)))
                 response.set_cookie("recent_summaries", ",".join(recent_ids), max_age=7 * 24 * 3600)
                 return response
             else:
@@ -278,6 +278,8 @@ def shared_summary(sum_id):
     data = summaries_db.get(sum_id)
     if not data:
         abort(404)
+    lang = request.args.get("lang", data.get("language", "en"))
+    ...
     return render_template(
         "shared_summary.html",
         summary=data["summary"],
@@ -285,7 +287,7 @@ def shared_summary(sum_id):
         summary_length=data.get("summary_length", "medium"),
         url=data.get("url"),
         text=data.get("text"),
-        language=data.get("language", "en"),
+        language=lang,   # use the preserved lang
         sentiment=data.get("sentiment"),
         sum_id=sum_id,
         summary_audio=data.get("summary_audio"),
