@@ -1,111 +1,198 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Shared Summary - News Summarizer</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
-</head>
-<body class="blue-theme">
-  <div class="card">
-    <div class="theme-toggle-group" aria-label="Theme Toggle">
-      <button class="theme-btn" id="btn-light" title="Light Theme">☀️</button>
-      <button class="theme-btn" id="btn-dark" title="Dark Theme">🌙</button>
-      <button class="theme-btn" id="btn-blue" title="Blue Theme">💧</button>
-      <button class="theme-btn" id="btn-purple" title="Purple Theme">🟣</button>
-    </div>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title or "Shared Summary" }} | News Intelligence</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Phosphor Icons CDN -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
-    <h1 style="font-size: 40px;">Shared Summary</h1>
-
-    {% if url %}
-      <p><strong>Source URL:</strong> <a href="{{ url }}" target="_blank">{{ url }}</a></p>
-    {% endif %}
-
-    {% if sentiment is mapping and 'label' in sentiment and 'score' in sentiment %}
-        <p><strong>Sentiment:</strong> {{ sentiment.label }} ({{ (sentiment.score * 100) | round(1) }}%)</p>
-    {% endif %}
-
-
-    <div class="summary-box">
-      <h2 style="font-size: 20px; text-align: center;">Summary</h2>
-      <p id="summary-text" style="white-space: pre-wrap;">{{ summary }}</p>
-    </div>
-    <button id="listenBtn" class="action-btn" style="margin-top:10px;">🔊 Listen</button>
-    <button id="download-summary" class="action-btn" style="margin-top:10px;">⬇️ Download Summary</button>
-
-
-    {% if key_sentences %}
-    <div class="summary-box" style="margin-top:10px;">
-      <button id="listenKeySentences" class="action-btn" style="margin-bottom: 10px;">🔊 Listen Key Sentences</button>
-      <h3 style="font-size: 20px; text-align: center;">Key Sentences</h3>
-      <ul>
-        {% for s in key_sentences %}
-          <li>{{ s }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% endif %}
-
-    <section style="margin-top:20px;">
-      <input type="text" id="shareLink" value="{{ request.url }}" readonly style="width:80%; padding:8px;" />
-      <button id="copyLinkBtn" class="action-btn">📋 Copy Link</button>
-      <span id="copyStatus" style="color:whitesmoke; display:none; margin-left:10px;">Copied!</span>
-
-      <div style="margin-top: 15px;">
-        <a href="https://twitter.com/intent/tweet?url={{ request.url }}" target="_blank" title="Share on Twitter" class="action-btn" 
-          style="display:inline-block; margin-right:8px;">🐣Twitter</a>
-        <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" title="Share on LinkedIn" class="action-btn"
-          style="display:inline-block; margin-right:8px;">🔗 LinkedIn</a>
-        <a href="https://api.whatsapp.com/send?text={{ request.url }}" target="_blank" title="Share on WhatsApp" class="action-btn"> 💬WhatsApp</a>
-      </div>
-    </section>
-  </div>
-
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <script>
-    // Copy share link button
-    document.getElementById("copyLinkBtn").addEventListener("click", () => {
-      const copyText = document.getElementById("shareLink");
-      copyText.select();
-      document.execCommand("copy");
-      const status = document.getElementById("copyStatus");
-      status.style.display = "inline";
-      setTimeout(() => { status.style.display = "none"; }, 1500);
-    });
-
-    // Download summary button
-    const downloadBtn = document.getElementById('download-summary');
-    const summaryEl = document.getElementById('summary-text');
-    if (downloadBtn && summaryEl) {
-      downloadBtn.addEventListener('click', () => {
-        const text = summaryEl.textContent || '';
-        if (!text.trim()) {
-          alert('No summary to download.');
-          return;
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fdfbf7;
+            color: #1e293b;
         }
-        const blob = new Blob([text], {type: 'text/plain'});
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'summary.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      });
-    }
 
-    // Listen to key sentences button
-    const listenKeyBtn = document.getElementById('listenKeySentences');
-    const keySentencesEls = document.querySelectorAll('.summary-box ul li');
-    if (listenKeyBtn && keySentencesEls.length) {
-      listenKeyBtn.addEventListener('click', () => {
-        const allSentences = Array.from(keySentencesEls).map(li => li.textContent).join('. ');
-        const utter = new SpeechSynthesisUtterance(allSentences);
-        utter.lang = 'en-US';
-        speechSynthesis.speak(utter);
-      });
-    }
-  </script>
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 0%, #fffbeb 0%, #fef3c7 40%, #fdfbf7 100%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.55;
+            animation: floatOrb 14s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            top: -10%;
+            left: 15%;
+            width: 550px;
+            height: 550px;
+            background: linear-gradient(135deg, #fef08a, #fde047);
+        }
+
+        .orb-2 {
+            bottom: -5%;
+            right: 10%;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(40px, -30px) scale(1.05); }
+            100% { transform: translate(-30px, 40px) scale(0.95); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
+
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+
+    <div class="relative z-10 max-w-4xl mx-auto px-6 py-10">
+        
+        <header class="flex justify-between items-center mb-8 pb-4 border-b border-amber-200/60">
+            <a href="/" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center text-white shadow-md">
+                    <i class="ph-bold ph-arrow-left text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base text-amber-950">AI NEWS INTELLIGENCE</h1>
+                    <p class="text-xs text-amber-800/60 font-mono">Verified Intelligence Report</p>
+                </div>
+            </a>
+            <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800">
+                    ID: {{ sum_id }}
+                </span>
+            </div>
+        </header>
+
+        <div class="glass-card rounded-2xl p-8 space-y-6">
+            
+            <div>
+                <h2 class="text-2xl font-extrabold text-amber-950 leading-tight">
+                    {{ title or "News Intelligence Summary" }}
+                </h2>
+                {% if url %}
+                <p class="text-xs font-mono text-amber-800/70 mt-1 truncate">
+                    Source: <a href="{{ url }}" target="_blank" class="underline hover:text-amber-900">{{ url }}</a>
+                </p>
+                {% endif %}
+            </div>
+
+            {% if sentiment %}
+            <div class="flex items-center gap-3 p-3.5 rounded-xl bg-amber-50/60 border border-amber-200 text-xs">
+                <i class="ph-bold ph-chart-pie-slice text-amber-600 text-base"></i>
+                <span class="font-bold text-amber-900">Sentiment:</span>
+                <span class="capitalize font-semibold text-slate-700">{{ sentiment.label }} ({{ (sentiment.score * 100) | round(1) }}% confidence)</span>
+            </div>
+            {% endif %}
+
+            <!-- Abstractive Summary Text -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60">Summary</span>
+                    <span class="text-[11px] font-mono text-amber-900/60">{{ summary_length | capitalize }} Profile</span>
+                </div>
+                <div id="summaryText" class="p-5 rounded-xl bg-white/90 border border-amber-200/80 text-slate-800 text-sm leading-relaxed font-medium">
+                    {{ summary }}
+                </div>
+            </div>
+
+            {% if key_sentences %}
+            <div class="space-y-2">
+                <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60">Extracted Key Points (MMR)</span>
+                <div class="space-y-2">
+                    {% for s in key_sentences %}
+                    <div class="flex items-start gap-3 p-3 rounded-xl bg-white/70 border border-amber-200/60 text-xs text-slate-800">
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0"></div>
+                        <span>{{ s }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions Bar -->
+            <div class="pt-4 border-t border-amber-200/60 flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-2">
+                    <button onclick="speakSummary()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
+                        <i class="ph-bold ph-speaker-high"></i> Listen
+                    </button>
+                    <button onclick="downloadText()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
+                        <i class="ph-bold ph-download-simple"></i> Download
+                    </button>
+                    <button onclick="copyShareUrl()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
+                        <i class="ph-bold ph-copy"></i> Copy Link
+                    </button>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-xs text-amber-900/60 font-semibold mr-1">Share:</span>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.url }}" target="_blank" class="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition" title="Twitter">
+                        <i class="ph-bold ph-x-logo"></i>
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url }}" target="_blank" class="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition" title="LinkedIn">
+                        <i class="ph-bold ph-linkedin-logo"></i>
+                    </a>
+                    <a href="https://api.whatsapp.com/send?text={{ request.url }}" target="_blank" class="p-2 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition" title="WhatsApp">
+                        <i class="ph-bold ph-whatsapp-logo"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+        function speakSummary() {
+            const text = document.getElementById('summaryText').innerText;
+            const utter = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utter);
+        }
+
+        function downloadText() {
+            const text = document.getElementById('summaryText').innerText;
+            const blob = new Blob([text], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'summary-{{ sum_id }}.txt';
+            a.click();
+        }
+
+        function copyShareUrl() {
+            navigator.clipboard.writeText(window.location.href);
+            alert("Share link copied to clipboard!");
+        }
+    </script>
 </body>
 </html>

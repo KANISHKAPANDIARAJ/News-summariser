@@ -1,195 +1,707 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>News Summarizer</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI News Workspace | News Intelligence Platform</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Phosphor Icons CDN -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fdfbf7;
+            color: #1e293b;
+        }
+
+        /* Ambient Dynamic Anime Mesh Background */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background: radial-gradient(circle at 50% 0%, #fffbeb 0%, #fef3c7 40%, #fdfbf7 100%);
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.55;
+            animation: floatOrb 14s ease-in-out infinite alternate;
+        }
+
+        .orb-1 {
+            top: -10%;
+            left: 15%;
+            width: 550px;
+            height: 550px;
+            background: linear-gradient(135deg, #fef08a, #fde047);
+        }
+
+        .orb-2 {
+            bottom: -5%;
+            right: 10%;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(135deg, #a7f3d0, #6ee7b7);
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            top: 35%;
+            left: 55%;
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #fecdd3, #fca5a5);
+            animation-delay: -9s;
+        }
+
+        @keyframes floatOrb {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(50px, -40px) scale(1.08); }
+            100% { transform: translate(-30px, 50px) scale(0.95); }
+        }
+
+        /* Frosted Warm Glass Cards */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.76);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(251, 191, 36, 0.28);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.08);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(245, 158, 11, 0.45);
+            transform: translateY(-2px);
+            box-shadow: 0 18px 36px -12px rgba(217, 119, 6, 0.16);
+        }
+
+        /* Animated Input Glow Outer Ring */
+        .glow-box-wrapper {
+            position: relative;
+        }
+        .glow-box-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 1.25rem;
+            background: linear-gradient(90deg, #f59e0b, #10b981, #ef4444);
+            opacity: 0.35;
+            filter: blur(12px);
+            transition: opacity 0.3s ease;
+            z-index: 0;
+        }
+        .glow-box-wrapper:focus-within::before {
+            opacity: 0.85;
+            filter: blur(16px);
+        }
+
+        .tab-btn {
+            transition: all 0.25s ease;
+        }
+        .tab-btn.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #d97706, #f59e0b);
+            box-shadow: 0 6px 18px rgba(217, 119, 6, 0.3);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #fdfbf7; }
+        ::-webkit-scrollbar-thumb { background: #fde68a; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
+    </style>
 </head>
-<body class="blue-theme">
-  <div class="card">
-    <div class="theme-toggle-group" aria-label="Theme Toggle">
-      <button class="theme-btn" id="btn-light" title="Light Theme">☀️</button>
-      <button class="theme-btn" id="btn-dark" title="Dark Theme">🌙</button>
-      <button class="theme-btn" id="btn-blue" title="Blue Theme">💧</button>
-      <button class="theme-btn" id="btn-purple" title="Purple Theme">🟣</button>
+<body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
+
+    <!-- AMBIENT ANIMATED BACKGROUND -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
     </div>
 
-    <h1>Summarize Text</h1>
-    <form method="POST">
-      <div>
-        <label><input type="radio" name="input_type" value="text" id="radio-text" /> Paste text</label>
-        <label><input type="radio" name="input_type" value="url" id="radio-url" checked /> Paste URL</label>
-      </div>
+    <!-- MAIN WRAPPER -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 py-8">
+        
+        <!-- HEADER BAR -->
+        <header class="flex justify-between items-center mb-10 pb-4 border-b border-amber-200/60 backdrop-blur-md">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-rose-500 p-[1px] shadow-lg shadow-amber-500/20">
+                    <div class="w-full h-full bg-amber-50 rounded-[11px] flex items-center justify-center">
+                        <i class="ph-bold ph-sparkle text-amber-600 text-xl"></i>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="font-extrabold text-lg tracking-tight bg-gradient-to-r from-amber-900 via-amber-800 to-emerald-900 bg-clip-text text-transparent">
+                            NEWS INTELLIGENCE PLATFORM
+                        </h1>
+                        <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                            V2.0 PRODUCTION
+                        </span>
+                    </div>
+                    <p class="text-xs font-mono text-amber-900/60">Hierarchical Map-Reduce • MMR Keypoints • Multilingual Tamil • Anti-SSRF</p>
+                </div>
+            </div>
 
-      <div id="url_input" style="margin-top:10px;">
-        <input type="text" name="url" placeholder="https://www.example.com/news/article" />
-      </div>
-      <div id="text_input" style="display:none; margin-top:10px;">
-        <textarea name="text" rows="8" placeholder="Paste your text here..."></textarea>
-        <br />
-        <span id="input-char-count">Characters: 0</span> | <span id="input-word-count">Words: 0</span>
-      </div>
+            <div class="flex items-center gap-4 text-xs font-mono">
+                <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-300 text-emerald-800 font-semibold shadow-sm">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    API: READY
+                </div>
+                <a href="/api/health" target="_blank" class="px-3 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 font-semibold hover:bg-amber-200 transition">
+                    Health
+                </a>
+            </div>
+        </header>
 
-      <div style="margin-top:15px;">
-        <label for="language">Language</label>
-        <select id="language" name="language" style="margin-left:10px;">
-          <option value="en" {% if language == 'en' %}selected{% endif %}>English</option>
-          <option value="fr" {% if language == 'fr' %}selected{% endif %}>French</option>
-          <option value="hi" {% if language == 'hi' %}selected{% endif %}>Hindi</option>
-          <option value="ta" {% if language == 'ta' %}selected{% endif %}>Tamil</option>
-          <option value="bn" {% if language == 'bn' %}selected{% endif %}>Bengali</option>
-          <option value="te" {% if language == 'te' %}selected{% endif %}>Telugu</option>
-          <option value="gu" {% if language == 'gu' %}selected{% endif %}>Gujarati</option>
-          <option value="kn" {% if language == 'kn' %}selected{% endif %}>Kannada</option>
-          <option value="ml" {% if language == 'ml' %}selected{% endif %}>Malayalam</option>
-          <option value="mr" {% if language == 'mr' %}selected{% endif %}>Marathi</option>
-          <option value="pa" {% if language == 'pa' %}selected{% endif %}>Punjabi</option>
-          <option value="ur" {% if language == 'ur' %}selected{% endif %}>Urdu</option>
-          <option value="es" {% if language == 'es' %}selected{% endif %}>Spanish</option>
-          <option value="de" {% if language == 'de' %}selected{% endif %}>German</option>
-          <option value="it" {% if language == 'it' %}selected{% endif %}>Italian</option>
-          <option value="pt" {% if language == 'pt' %}selected{% endif %}>Portuguese</option>
-          <option value="ru" {% if language == 'ru' %}selected{% endif %}>Russian</option>
-          <option value="zh" {% if language == 'zh' %}selected{% endif %}>Chinese</option>
-          <option value="ja" {% if language == 'ja' %}selected{% endif %}>Japanese</option>
-          <option value="ko" {% if language == 'ko' %}selected{% endif %}>Korean</option>
-          <option value="ar" {% if language == 'ar' %}selected{% endif %}>Arabic</option>
-        </select>
-      </div>
+        <!-- INPUT COMMAND CENTER -->
+        <section class="max-w-4xl mx-auto mb-10">
+            
+            <!-- Source Selector Tabs -->
+            <div class="flex justify-center gap-2 mb-4 p-1.5 bg-white/80 backdrop-blur-xl border border-amber-200/80 rounded-2xl w-fit mx-auto shadow-xl shadow-amber-900/5">
+                <button id="tab-url" onclick="setMode('url')" class="tab-btn active flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold">
+                    <i class="ph-bold ph-globe text-sm"></i> Webpage URL
+                </button>
+                <button id="tab-text" onclick="setMode('text')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-amber-700">
+                    <i class="ph-bold ph-file-text text-sm"></i> Raw Article
+                </button>
+                <button id="tab-compare" onclick="setMode('compare')" class="tab-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-amber-700">
+                    <i class="ph-bold ph-git-diff text-sm"></i> Compare 2 Articles
+                </button>
+            </div>
 
-      <div style="margin-top:15px;">
-        <label for="summary_length">Summary Length</label>
-        <input type="range" id="summary_length" name="summary_length" min="30" max="200" step="5" value="120" style="width: 100%;" />
-      </div>
+            <!-- Glowing Input Control -->
+            <div class="glow-box-wrapper">
+                <div class="relative bg-white/90 backdrop-blur-2xl border border-amber-200/80 rounded-2xl p-3.5 shadow-2xl z-10">
+                    
+                    <!-- URL Input Box -->
+                    <div id="urlInputContainer" class="flex items-center gap-2">
+                        <input 
+                            id="urlInput"
+                            type="url" 
+                            placeholder="Paste news article link (e.g. https://www.bbc.com/news/...)" 
+                            class="w-full bg-transparent px-3 py-2 text-sm text-slate-800 font-medium placeholder-slate-400 outline-none"
+                        >
+                    </div>
 
-      <button type="submit" style="margin-top:20px; width:100%;">Summarize</button>
-    </form>
+                    <!-- Raw Text Input Box -->
+                    <div id="textInputContainer" class="hidden">
+                        <textarea 
+                            id="textInput" 
+                            rows="5" 
+                            placeholder="Paste long-form news text here (supports multi-thousand word articles)..." 
+                            class="w-full bg-transparent px-3 py-2 text-sm text-slate-800 font-medium placeholder-slate-400 outline-none resize-y"
+                        ></textarea>
+                        <div class="text-[11px] text-amber-900/60 px-3 pb-1 font-mono flex justify-between">
+                            <span id="charCount">0 characters</span>
+                            <span id="wordCount">0 words</span>
+                        </div>
+                    </div>
 
-    {% if error %}
-      <div style="color:whitesmoke; margin-top:10px;">{{ error }}</div>
-    {% endif %}
+                    <!-- Compare Input Box -->
+                    <div id="compareInputContainer" class="hidden grid grid-cols-1 md:grid-cols-2 gap-3 mb-2">
+                        <textarea id="compareTextA" rows="4" placeholder="Article A text..." class="p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs outline-none focus:border-amber-500"></textarea>
+                        <textarea id="compareTextB" rows="4" placeholder="Article B text..." class="p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs outline-none focus:border-amber-500"></textarea>
+                    </div>
 
-    {% if summary %}
-    <section style="margin-top:30px;">
-      {% if sentiment %}
-      <p><strong>Sentiment:</strong> {{ sentiment.label }} ({{ (sentiment.score * 100) | round(1) }}%)</p>
-      {% endif %}
-      <h2>Summary</h2>
-      <p id="summary-text" style="white-space: pre-wrap; background: #eee; padding: 15px; border-radius: 10px;">{{ summary }}</p>
-      <div id="summary-counts" style="margin-top:5px; color:#555;"></div>
-      <button id="listenBtn" class="action-btn" style="margin-top:10px;">🔊 Listen</button>
-      <button id="download-summary" class="action-btn" style="margin-top:10px;">⬇️ Download Summary</button>
-    </section>
-    {% endif %}
+                    <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-amber-100 mt-2">
+                        <!-- Summary Length Selector -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-amber-900/70">Length:</span>
+                            <div class="flex bg-amber-100/60 p-1 rounded-lg border border-amber-200 text-[11px]">
+                                <button onclick="setLength('short')" id="len-short" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Short</button>
+                                <button onclick="setLength('medium')" id="len-medium" class="px-3 py-1 rounded-md bg-amber-500 text-white font-bold shadow-sm transition-all">Medium</button>
+                                <button onclick="setLength('detailed')" id="len-detailed" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Detailed</button>
+                            </div>
+                        </div>
 
-    {% if key_sentences %}
-    <section style="margin-top:20px;">
-      <button id="listenKeySentences" class="action-btn" style="margin-bottom: 10px;">🔊 Listen Key Sentences</button>
-      <h3>Key Sentences</h3>
-      <ul>
-        {% for s in key_sentences %}
-        <li>{{ s }}</li>
-        {% endfor %}
-      </ul>
-    </section>
-    {% endif %}
+                        <!-- Language Selector -->
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold text-amber-900/70">Translate:</span>
+                            <select id="languageSelect" class="bg-white border border-amber-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold outline-none focus:border-amber-500 shadow-sm">
+                                <option value="en">English (Original)</option>
+                                <option value="ta">Tamil (தமிழ்)</option>
+                                <option value="hi">Hindi (हिन्दी)</option>
+                                <option value="fr">French (Français)</option>
+                                <option value="de">German (Deutsch)</option>
+                                <option value="es">Spanish (Español)</option>
+                                <option value="it">Italian (Italiano)</option>
+                                <option value="pt">Portuguese (Português)</option>
+                                <option value="ru">Russian (Русский)</option>
+                                <option value="zh">Chinese (中文)</option>
+                                <option value="ja">Japanese (日本語)</option>
+                                <option value="ko">Korean (한국어)</option>
+                                <option value="ar">Arabic (العربية)</option>
+                                <option value="bn">Bengali (বাংলা)</option>
+                                <option value="mr">Marathi (मराठी)</option>
+                            </select>
+                        </div>
 
-    {% if recent %}
-    <section style="margin-top:30px;">
-      <h3>Recent Summaries</h3>
-      <ul>
-        {% for item in recent %}
-          <li><a href="{{ url_for('shared_summary', sum_id=item.id) }}" class="recent-summary-link">{{ item.summary }}</a></li>
-        {% endfor %}
-      </ul>
-    </section>
-    {% endif %}
+                        <!-- Action Button -->
+                        <button 
+                            id="processBtn"
+                            onclick="triggerProcessing()"
+                            class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-500/25 whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer"
+                        >
+                            <i id="btnIcon" class="ph-bold ph-lightning text-amber-200 text-base"></i>
+                            <span id="btnText">Process Pipeline</span>
+                        </button>
+                    </div>
 
-  </div>
+                </div>
+            </div>
 
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <script>
-    const radioUrl = document.getElementById('radio-url');
-    const radioText = document.getElementById('radio-text');
-    const urlInput = document.getElementById('url_input');
-    const textInput = document.getElementById('text_input');
+            <!-- Error Banner -->
+            <div id="errorBanner" class="hidden mt-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+                <i class="ph-bold ph-warning-circle text-rose-600 text-base"></i>
+                <span id="errorMessage">An error occurred during pipeline execution.</span>
+            </div>
+        </section>
 
-    function toggleInput() {
-      if (radioUrl.checked) {
-        urlInput.style.display = "block";
-        textInput.style.display = "none";
-      } else {
-        urlInput.style.display = "none";
-        textInput.style.display = "block";
-      }
-    }
-    radioUrl.addEventListener('change', toggleInput);
-    radioText.addEventListener('change', toggleInput);
-    toggleInput();
+        <!-- DASHBOARD GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- LEFT MAIN FEED (2 COLS) -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Abstractive Summary Card -->
+                <div class="glass-card p-6 rounded-2xl relative">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-2">
+                            <i class="ph-bold ph-layers text-amber-600 text-lg"></i>
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                                Abstractive Hierarchical Summary
+                            </h3>
+                        </div>
 
-    // Live input char and word count
-    const textarea = textInput.querySelector('textarea');
-    const charCountSpan = document.getElementById('input-char-count');
-    const wordCountSpan = document.getElementById('input-word-count');
-    if (textarea) {
-      textarea.addEventListener('input', () => {
-        const val = textarea.value;
-        charCountSpan.textContent = `Characters: ${val.length}`;
-        wordCountSpan.textContent = `Words: ${val.trim() ? val.trim().split(/\s+/).length : 0}`;
-      });
-    }
+                        <div class="flex items-center gap-2">
+                            <button onclick="speakSummary()" title="Listen in browser" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                                <i class="ph-bold ph-speaker-high text-sm"></i>
+                            </button>
+                            <button onclick="copySummary()" title="Copy to clipboard" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                                <i class="ph-bold ph-copy text-sm"></i>
+                            </button>
+                            <button onclick="downloadSummaryText()" title="Download text file" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                                <i class="ph-bold ph-download-simple text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
 
-    // Summary char & word counts
-    const summaryEl = document.getElementById('summary-text');
-    const summaryCountsEl = document.getElementById('summary-counts');
-    if (summaryEl && summaryCountsEl) {
-      const val = summaryEl.textContent || '';
-      summaryCountsEl.textContent = `Characters: ${val.length}, Words: ${val.trim() ? val.trim().split(/\s+/).length : 0}`;
-    }
+                    <p id="summaryBody" class="text-slate-700 leading-relaxed text-sm font-medium">
+                        Researchers have deployed a token-aware Map-Reduce summary pipeline engineered to eliminate context loss across long-form document processing. By coupling semantic sentence vector embeddings with Maximal Marginal Relevance (MMR), the system achieves superior compression while preserving context integrity across multi-chunk inputs.
+                    </p>
 
-    // Text to speech on Listen button
-    const listenBtn = document.getElementById('listenBtn');
-    if (listenBtn && summaryEl) {
-      listenBtn.addEventListener('click', () => {
-        const utterThis = new SpeechSynthesisUtterance(summaryEl.textContent);
-        utterThis.lang = 'en-US';
-        speechSynthesis.speak(utterThis);
-      });
-    }
+                    <div id="shareLinkContainer" class="hidden mt-4 pt-3 border-t border-amber-200/60 flex items-center justify-between text-xs">
+                        <span class="text-amber-900/60 font-mono">Shareable Link:</span>
+                        <a id="shareLinkAnchor" href="#" target="_blank" class="text-amber-700 underline font-semibold">View / Share Report</a>
+                    </div>
+                </div>
 
-    // Listen to key sentences
-    const listenKeyBtn = document.getElementById('listenKeySentences');
-    const keySentencesEls = document.querySelectorAll('.summary-box ul li');
-    if (listenKeyBtn && keySentencesEls.length) {
-      listenKeyBtn.addEventListener('click', () => {
-        const allSentences = Array.from(keySentencesEls).map(li => li.textContent).join('. ');
-        const utter = new SpeechSynthesisUtterance(allSentences);
-        utter.lang = 'en-US';
-        speechSynthesis.speak(utter);
-      });
-    }
+                <!-- MMR Key Points Card -->
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="ph-bold ph-check-circle text-emerald-600 text-lg"></i>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                            Key Point Extraction (MMR Scored)
+                        </h3>
+                    </div>
 
-    // Download summary button
-    const downloadBtn = document.getElementById('download-summary');
-    if (downloadBtn && summaryEl) {
-      downloadBtn.addEventListener('click', () => {
-        const text = summaryEl.textContent || '';
-        if (!text || !text.trim()) {
-          alert('No summary to download.');
-          return;
+                    <div id="keyPointsList" class="space-y-3">
+                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 shadow-sm shadow-emerald-400"></div>
+                            <span class="text-sm text-slate-800 font-medium">Replaces naive sentence truncation with high-dimensional vector space semantic distance scoring.</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
+                            <div class="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0 shadow-sm shadow-amber-400"></div>
+                            <span class="text-sm text-slate-800 font-medium">Token-aware chunking algorithm guarantees zero sentence clipping across chunk boundaries.</span>
+                        </div>
+                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
+                            <div class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 flex-shrink-0 shadow-sm shadow-rose-400"></div>
+                            <span class="text-sm text-slate-800 font-medium">Sentence-level translation prevents truncation degradation across multilingual channels.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entities Matrix -->
+                <div class="glass-card p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60 block mb-3">
+                            Named Entities
+                        </span>
+                        <div id="entitiesContainer" class="flex flex-wrap gap-2">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100/80 border border-amber-300 text-amber-900">
+                                <i class="ph-bold ph-buildings"></i> OpenAI
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100/80 border border-rose-300 text-rose-900">
+                                <i class="ph-bold ph-user"></i> Sam Altman
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100/80 border border-emerald-300 text-emerald-900">
+                                <i class="ph-bold ph-map-pin"></i> California
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="text-[11px] font-extrabold uppercase tracking-wider text-amber-900/60 block mb-3">
+                            Salient Keywords
+                        </span>
+                        <div id="keywordsContainer" class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#Summarization</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#NLP Pipelines</span>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#Embeddings</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT SIDEBAR (1 COL) -->
+            <div class="space-y-6">
+                
+                <!-- Quick Performance Stats -->
+                <div class="grid grid-cols-3 gap-3">
+                    <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
+                        <div id="statWords" class="text-base font-bold font-mono text-amber-900">4,120</div>
+                        <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Words</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
+                        <div id="statRatio" class="text-base font-bold font-mono text-amber-900">82%</div>
+                        <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Ratio</div>
+                    </div>
+                    <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
+                        <div id="statLatency" class="text-base font-bold font-mono text-amber-900">1.2s</div>
+                        <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Latency</div>
+                    </div>
+                </div>
+
+                <!-- Sentiment Spectrum Bar -->
+                <div class="glass-card p-6 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i class="ph-bold ph-chart-pie-slice text-amber-600 text-lg"></i>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                            Document Sentiment Spectrum
+                        </h3>
+                    </div>
+
+                    <div class="h-3 w-full bg-amber-100 rounded-full overflow-hidden flex gap-0.5 mb-3 p-0.5 border border-amber-200">
+                        <div id="barPos" class="h-full bg-emerald-500 rounded-l-full" style="width: 68%" title="Positive"></div>
+                        <div id="barNeu" class="h-full bg-amber-400" style="width: 22%" title="Neutral"></div>
+                        <div id="barNeg" class="h-full bg-rose-500 rounded-r-full" style="width: 10%" title="Negative"></div>
+                    </div>
+
+                    <div class="flex justify-between text-xs font-mono font-bold">
+                        <span id="labelPos" class="text-emerald-700">68% Pos</span>
+                        <span id="labelNeu" class="text-amber-700">22% Neu</span>
+                        <span id="labelNeg" class="text-rose-700">10% Neg</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 mt-2 italic font-mono">Measures emotional polarity across segments.</p>
+                </div>
+
+                <!-- Multilingual & Audio Tools -->
+                <div class="glass-card p-6 rounded-2xl space-y-4">
+                    <div class="flex items-center gap-2">
+                        <i class="ph-bold ph-speaker-high text-amber-600 text-lg"></i>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                            Server-Side Audio (MP3)
+                        </h3>
+                    </div>
+
+                    <button onclick="requestServerTTS()" id="ttsBtn" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 cursor-pointer">
+                        <i class="ph-bold ph-waveform text-base"></i>
+                        <span id="ttsBtnText">Generate & Stream MP3</span>
+                    </button>
+
+                    <div id="audioPlayerContainer" class="hidden">
+                        <audio id="audioPlayer" controls class="w-full mt-2"></audio>
+                        <a id="audioDownloadLink" href="#" download="summary.mp3" class="block text-center mt-2 text-xs text-amber-800 font-semibold underline">Download MP3 File</a>
+                    </div>
+                </div>
+
+                <!-- Persistent Recent Summaries -->
+                <div class="glass-card p-6 rounded-2xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i class="ph-bold ph-clock-counter-clockwise text-amber-600 text-lg"></i>
+                            <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                                Recent History (SQLite DB)
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div id="recentHistoryList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                        {% if recent %}
+                            {% for item in recent %}
+                            <div class="p-2.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-amber-400 transition flex items-center justify-between text-xs">
+                                <a href="/s/{{ item.id }}" class="truncate font-medium text-slate-700 hover:text-amber-800 flex-1 mr-2">{{ item.title }} ({{ item.length }})</a>
+                                <a href="/s/{{ item.id }}" class="text-amber-600 hover:underline">View</a>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-xs text-slate-400 italic">No previous summaries recorded.</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- CLIENT INTERACTION SCRIPT -->
+    <script>
+        let currentMode = 'url';
+        let currentLength = 'medium';
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active', 'text-white');
+                b.classList.add('text-slate-600');
+            });
+            document.getElementById(`tab-${mode}`).classList.add('active');
+            document.getElementById(`tab-${mode}`).classList.remove('text-slate-600');
+
+            document.getElementById('urlInputContainer').classList.toggle('hidden', mode !== 'url');
+            document.getElementById('textInputContainer').classList.toggle('hidden', mode !== 'text');
+            document.getElementById('compareInputContainer').classList.toggle('hidden', mode !== 'compare');
         }
-        const blob = new Blob([text], {type:'text/plain'});
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'summary.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      });
-    }
-  </script>
+
+        function setLength(length) {
+            currentLength = length;
+            ['short', 'medium', 'detailed'].forEach(l => {
+                const btn = document.getElementById(`len-${l}`);
+                if (l === length) {
+                    btn.className = 'px-3 py-1 rounded-md bg-amber-500 text-white font-bold shadow-sm transition-all';
+                } else {
+                    btn.className = 'px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all';
+                }
+            });
+        }
+
+        // Live text counter
+        const textInput = document.getElementById('textInput');
+        textInput.addEventListener('input', () => {
+            const val = textInput.value;
+            document.getElementById('charCount').textContent = `${val.length} characters`;
+            document.getElementById('wordCount').textContent = `${val.trim() ? val.trim().split(/\s+/).length : 0} words`;
+        });
+
+        async function triggerProcessing() {
+            const btn = document.getElementById('processBtn');
+            const icon = document.getElementById('btnIcon');
+            const text = document.getElementById('btnText');
+            const errBanner = document.getElementById('errorBanner');
+            errBanner.classList.add('hidden');
+
+            icon.className = 'ph-bold ph-spinner animate-spin text-base';
+            text.innerText = 'Processing Pipeline...';
+            btn.disabled = true;
+
+            const lang = document.getElementById('languageSelect').value;
+
+            try {
+                if (currentMode === 'compare') {
+                    const textA = document.getElementById('compareTextA').value.trim();
+                    const textB = document.getElementById('compareTextB').value.trim();
+                    if (!textA || !textB) throw new Error("Please provide text for both Article A and Article B.");
+
+                    const res = await fetch('/api/compare', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ text_a: textA, text_b: textB })
+                    });
+                    const payload = await res.json();
+                    if (!payload.success) throw new Error(payload.error ? payload.error.message : "Comparison failed");
+
+                    renderComparisonResult(payload.data);
+                } else {
+                    const reqBody = {
+                        length_profile: currentLength,
+                        language: lang
+                    };
+                    if (currentMode === 'url') {
+                        const url = document.getElementById('urlInput').value.trim();
+                        if (!url) throw new Error("Please enter a valid news URL.");
+                        reqBody.url = url;
+                    } else {
+                        const raw = document.getElementById('textInput').value.trim();
+                        if (!raw) throw new Error("Please enter article text.");
+                        reqBody.text = raw;
+                    }
+
+                    // 1. Run Summarization
+                    const summRes = await fetch('/api/summarize', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(reqBody)
+                    });
+                    const summPayload = await summRes.json();
+                    if (!summPayload.success) throw new Error(summPayload.error ? summPayload.error.message : "Summarization failed");
+
+                    renderSummaryResult(summPayload.data);
+
+                    // 2. Run NLP Intelligence Analysis in background
+                    const textForAnalysis = currentMode === 'url' ? summPayload.data.original_url : reqBody.text;
+                    const analysisRes = await fetch('/api/analyze', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ [currentMode === 'url' ? 'url' : 'text']: textForAnalysis })
+                    });
+                    const analysisPayload = await analysisRes.json();
+                    if (analysisPayload.success) {
+                        renderAnalysisResult(analysisPayload.data);
+                    }
+                }
+            } catch (err) {
+                errBanner.classList.remove('hidden');
+                document.getElementById('errorMessage').textContent = err.message;
+            } finally {
+                icon.className = 'ph-bold ph-lightning text-amber-200 text-base';
+                text.innerText = 'Process Pipeline';
+                btn.disabled = false;
+            }
+        }
+
+        function renderSummaryResult(data) {
+            document.getElementById('summaryBody').textContent = data.summary;
+            document.getElementById('statRatio').textContent = `${Math.round(data.compression_ratio)}%`;
+            document.getElementById('statLatency').textContent = `${(data.processing_time_ms / 1000).toFixed(1)}s`;
+            document.getElementById('statWords').textContent = data.summary.split(/\s+/).length;
+
+            const shareAnchor = document.getElementById('shareLinkAnchor');
+            const shareContainer = document.getElementById('shareLinkContainer');
+            shareAnchor.href = `/s/${data.summary_id}?lang=${data.language}`;
+            shareAnchor.textContent = `View Shareable Report (${data.summary_id})`;
+            shareContainer.classList.remove('hidden');
+        }
+
+        function renderAnalysisResult(data) {
+            // Sentiment
+            const dist = data.sentiment.distribution;
+            const pPos = Math.round(dist.positive * 100);
+            const pNeu = Math.round(dist.neutral * 100);
+            const pNeg = Math.round(dist.negative * 100);
+
+            document.getElementById('barPos').style.width = `${pPos}%`;
+            document.getElementById('barNeu').style.width = `${pNeu}%`;
+            document.getElementById('barNeg').style.width = `${pNeg}%`;
+
+            document.getElementById('labelPos').textContent = `${pPos}% Pos`;
+            document.getElementById('labelNeu').textContent = `${pNeu}% Neu`;
+            document.getElementById('labelNeg').textContent = `${pNeg}% Neg`;
+
+            // Key Points
+            const kpContainer = document.getElementById('keyPointsList');
+            kpContainer.innerHTML = '';
+            data.key_points.forEach((kp, idx) => {
+                const dotColor = idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-amber-500' : 'bg-rose-500';
+                kpContainer.innerHTML += `
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
+                        <div class="w-2 h-2 rounded-full ${dotColor} mt-1.5 flex-shrink-0"></div>
+                        <span class="text-sm text-slate-800 font-medium">${kp.text}</span>
+                    </div>
+                `;
+            });
+
+            // Keywords
+            const kwContainer = document.getElementById('keywordsContainer');
+            kwContainer.innerHTML = '';
+            data.keywords.forEach(kw => {
+                kwContainer.innerHTML += `<span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#${kw}</span>`;
+            });
+
+            // Entities
+            const entContainer = document.getElementById('entitiesContainer');
+            entContainer.innerHTML = '';
+            data.entities.slice(0, 6).forEach(e => {
+                const icon = e.label === 'ORGANIZATION' ? 'ph-buildings' : e.label === 'PERSON' ? 'ph-user' : 'ph-map-pin';
+                entContainer.innerHTML += `
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100/80 border border-amber-300 text-amber-900">
+                        <i class="ph-bold ${icon}"></i> ${e.text}
+                    </span>
+                `;
+            });
+        }
+
+        function renderComparisonResult(data) {
+            document.getElementById('summaryBody').innerHTML = `
+                <strong>Semantic Similarity:</strong> ${(data.similarity_score * 100).toFixed(1)}%<br><br>
+                <strong>Common Topics:</strong> ${data.common_keywords.join(', ') || 'General thematic alignment'}<br><br>
+                <strong>Unique to Article A:</strong> ${data.unique_to_first.slice(0, 2).join(' ')}<br><br>
+                <strong>Unique to Article B:</strong> ${data.unique_to_second.slice(0, 2).join(' ')}
+            `;
+            document.getElementById('statRatio').textContent = `${Math.round(data.similarity_score * 100)}% Sim`;
+        }
+
+        // Browser Web Speech TTS
+        function speakSummary() {
+            const text = document.getElementById('summaryBody').innerText;
+            if (!text) return;
+            const utter = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utter);
+        }
+
+        // Server-Side MP3 TTS
+        async function requestServerTTS() {
+            const text = document.getElementById('summaryBody').innerText;
+            const lang = document.getElementById('languageSelect').value;
+            const btnText = document.getElementById('ttsBtnText');
+            btnText.innerText = "Generating Audio...";
+
+            try {
+                const res = await fetch('/api/tts', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ text: text, language: lang })
+                });
+                const payload = await res.json();
+                if (!payload.success) throw new Error(payload.error.message);
+
+                const audioContainer = document.getElementById('audioPlayerContainer');
+                const player = document.getElementById('audioPlayer');
+                const dlLink = document.getElementById('audioDownloadLink');
+
+                player.src = payload.data.audio_url;
+                dlLink.href = `${payload.data.audio_url}?download=true`;
+                audioContainer.classList.remove('hidden');
+                player.play();
+            } catch (e) {
+                alert("TTS Error: " + e.message);
+            } finally {
+                btnText.innerText = "Generate & Stream MP3";
+            }
+        }
+
+        function copySummary() {
+            const text = document.getElementById('summaryBody').innerText;
+            navigator.clipboard.writeText(text);
+            alert("Summary copied to clipboard!");
+        }
+
+        function downloadSummaryText() {
+            const text = document.getElementById('summaryBody').innerText;
+            const blob = new Blob([text], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'news_summary.txt';
+            a.click();
+        }
+    </script>
 </body>
 </html>
