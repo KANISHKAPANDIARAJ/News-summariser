@@ -1,8 +1,47 @@
-# .gitignore
-venv/
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Environment variables & secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+instance/
+
+# Audio cache & temporary files
+audio_cache/
+*.mp3
+*.wav
+temp/
+tmp/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Hugging Face / PyTorch models
 *.pt
 *.bin
-*.pkl
-*.mp3
-*.pyc
+*.onnx
+*.safetensors
+models/cache/
+
+# IDEs & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
