@@ -22,4 +22,4 @@ class CompareRequest(BaseModel):
     text_b: str
 
 class MultiSourceRequest(BaseModel):
-    articles: List[Dict[str, str]] = Field(..., min_items=2, description="List of articles with 'text' and optional 'title'")
+    articles: List[Dict[str, str]] = Field(..., min_length=2, description="List of articles with 'text' and optional 'title'")
