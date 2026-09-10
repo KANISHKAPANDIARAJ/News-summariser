@@ -152,10 +152,13 @@ def summarize_article():
         )
         summary_repo.create_summary(db_summary)
         summary_id = db_summary.id
+        persisted_article_id = db_article.id
+        persisted_article_title = db_article.title
+        persisted_article_url = db_article.url
 
     response_data = {
         "summary_id": summary_id,
-        "article_id": db_article.id,
+        "article_id": persisted_article_id,
         "summary": summ_res["summary"],
         "length_profile": req.length_profile,
         "compression_ratio": comp_ratio,
@@ -164,8 +167,8 @@ def summarize_article():
         "language": effective_target_lang,
         "source_language": source_lang,
         "language_name": lang_info["language_name"],
-        "original_title": db_article.title,
-        "original_url": db_article.url,
+        "original_title": persisted_article_title,
+        "original_url": persisted_article_url,
         "word_count": orig_words,
         "summary_word_count": summary_words,
         "reading_time": reading_time,
