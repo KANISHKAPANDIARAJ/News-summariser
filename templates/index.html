@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI News Workspace | News Intelligence Platform</title>
+    <title>AI News Workspace | News Intelligence Platform V2.1</title>
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -21,7 +21,6 @@
             color: #1e293b;
         }
 
-        /* Ambient Dynamic Anime Mesh Background */
         .ambient-bg {
             position: fixed;
             top: 0;
@@ -74,9 +73,8 @@
             100% { transform: translate(-30px, 50px) scale(0.95); }
         }
 
-        /* Frosted Warm Glass Cards */
         .glass-card {
-            background: rgba(255, 255, 255, 0.76);
+            background: rgba(255, 255, 255, 0.78);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(251, 191, 36, 0.28);
@@ -84,13 +82,6 @@
             box-shadow: 0 10px 30px -10px rgba(217, 119, 6, 0.08);
         }
 
-        .glass-card:hover {
-            border-color: rgba(245, 158, 11, 0.45);
-            transform: translateY(-2px);
-            box-shadow: 0 18px 36px -12px rgba(217, 119, 6, 0.16);
-        }
-
-        /* Animated Input Glow Outer Ring */
         .glow-box-wrapper {
             position: relative;
         }
@@ -110,9 +101,6 @@
             filter: blur(16px);
         }
 
-        .tab-btn {
-            transition: all 0.25s ease;
-        }
         .tab-btn.active {
             color: #ffffff;
             background: linear-gradient(135deg, #d97706, #f59e0b);
@@ -127,18 +115,17 @@
 </head>
 <body class="min-h-screen relative overflow-x-hidden selection:bg-amber-500 selection:text-white">
 
-    <!-- AMBIENT ANIMATED BACKGROUND -->
     <div class="ambient-bg">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
         <div class="orb orb-3"></div>
     </div>
 
-    <!-- MAIN WRAPPER -->
+    <!-- MAIN CONTAINER -->
     <div class="relative z-10 max-w-7xl mx-auto px-6 py-8">
         
-        <!-- HEADER BAR -->
-        <header class="flex justify-between items-center mb-10 pb-4 border-b border-amber-200/60 backdrop-blur-md">
+        <!-- HEADER -->
+        <header class="flex justify-between items-center mb-8 pb-4 border-b border-amber-200/60 backdrop-blur-md">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-emerald-500 to-rose-500 p-[1px] shadow-lg shadow-amber-500/20">
                     <div class="w-full h-full bg-amber-50 rounded-[11px] flex items-center justify-center">
@@ -151,17 +138,17 @@
                             NEWS INTELLIGENCE PLATFORM
                         </h1>
                         <span class="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
-                            V2.0 PRODUCTION
+                            V2.1 MULTILINGUAL
                         </span>
                     </div>
-                    <p class="text-xs font-mono text-amber-900/60">Hierarchical Map-Reduce • MMR Keypoints • Multilingual Tamil • Anti-SSRF</p>
+                    <p class="text-xs font-mono text-amber-900/60">Multilingual NLP • ReportLab Unicode PDF • Tamil & Indic Specialization • Anti-SSRF</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-4 text-xs font-mono">
-                <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-300 text-emerald-800 font-semibold shadow-sm">
+            <div class="flex items-center gap-3 text-xs font-mono">
+                <div id="statusBadge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-100/80 border border-emerald-300 text-emerald-800 font-semibold shadow-sm">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    API: READY
+                    READY
                 </div>
                 <a href="/api/health" target="_blank" class="px-3 py-1.5 rounded-full bg-amber-100 border border-amber-300 text-amber-800 font-semibold hover:bg-amber-200 transition">
                     Health
@@ -169,8 +156,8 @@
             </div>
         </header>
 
-        <!-- INPUT COMMAND CENTER -->
-        <section class="max-w-4xl mx-auto mb-10">
+        <!-- COMMAND CENTER -->
+        <section class="max-w-4xl mx-auto mb-8">
             
             <!-- Source Selector Tabs -->
             <div class="flex justify-center gap-2 mb-4 p-1.5 bg-white/80 backdrop-blur-xl border border-amber-200/80 rounded-2xl w-fit mx-auto shadow-xl shadow-amber-900/5">
@@ -185,16 +172,16 @@
                 </button>
             </div>
 
-            <!-- Glowing Input Control -->
+            <!-- Glowing Input Box -->
             <div class="glow-box-wrapper">
-                <div class="relative bg-white/90 backdrop-blur-2xl border border-amber-200/80 rounded-2xl p-3.5 shadow-2xl z-10">
+                <div class="relative bg-white/95 backdrop-blur-2xl border border-amber-200/80 rounded-2xl p-4 shadow-2xl z-10">
                     
                     <!-- URL Input Box -->
                     <div id="urlInputContainer" class="flex items-center gap-2">
                         <input 
                             id="urlInput"
                             type="url" 
-                            placeholder="Paste news article link (e.g. https://www.bbc.com/news/...)" 
+                            placeholder="Paste news article link (e.g. https://tamil.abplive.com/... or https://www.bbc.com/...)" 
                             class="w-full bg-transparent px-3 py-2 text-sm text-slate-800 font-medium placeholder-slate-400 outline-none"
                         >
                     </div>
@@ -204,7 +191,7 @@
                         <textarea 
                             id="textInput" 
                             rows="5" 
-                            placeholder="Paste long-form news text here (supports multi-thousand word articles)..." 
+                            placeholder="Paste news text here in any language (Tamil, Hindi, English, French, Arabic, etc.)..." 
                             class="w-full bg-transparent px-3 py-2 text-sm text-slate-800 font-medium placeholder-slate-400 outline-none resize-y"
                         ></textarea>
                         <div class="text-[11px] text-amber-900/60 px-3 pb-1 font-mono flex justify-between">
@@ -219,36 +206,35 @@
                         <textarea id="compareTextB" rows="4" placeholder="Article B text..." class="p-2.5 bg-amber-50/50 border border-amber-200 rounded-xl text-xs outline-none focus:border-amber-500"></textarea>
                     </div>
 
+                    <!-- Controls Toolbar -->
                     <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-amber-100 mt-2">
-                        <!-- Summary Length Selector -->
+                        <!-- Length -->
                         <div class="flex items-center gap-2">
                             <span class="text-xs font-bold text-amber-900/70">Length:</span>
                             <div class="flex bg-amber-100/60 p-1 rounded-lg border border-amber-200 text-[11px]">
-                                <button onclick="setLength('short')" id="len-short" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Short</button>
-                                <button onclick="setLength('medium')" id="len-medium" class="px-3 py-1 rounded-md bg-amber-500 text-white font-bold shadow-sm transition-all">Medium</button>
-                                <button onclick="setLength('detailed')" id="len-detailed" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Detailed</button>
+                                <button onclick="setLength('short')" id="len-short" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Short (~8%)</button>
+                                <button onclick="setLength('medium')" id="len-medium" class="px-3 py-1 rounded-md bg-amber-500 text-white font-bold shadow-sm transition-all">Medium (~15%)</button>
+                                <button onclick="setLength('detailed')" id="len-detailed" class="px-3 py-1 rounded-md text-amber-900/70 hover:text-amber-900 font-semibold transition-all">Detailed (~25%)</button>
                             </div>
                         </div>
 
-                        <!-- Language Selector -->
+                        <!-- Target Language -->
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-amber-900/70">Translate:</span>
+                            <span class="text-xs font-bold text-amber-900/70">Output Language:</span>
                             <select id="languageSelect" class="bg-white border border-amber-200 rounded-lg px-2.5 py-1 text-xs text-slate-800 font-semibold outline-none focus:border-amber-500 shadow-sm">
-                                <option value="en">English (Original)</option>
+                                <option value="auto">Auto-detect (Native)</option>
                                 <option value="ta">Tamil (தமிழ்)</option>
+                                <option value="en">English</option>
                                 <option value="hi">Hindi (हिन्दी)</option>
                                 <option value="fr">French (Français)</option>
                                 <option value="de">German (Deutsch)</option>
                                 <option value="es">Spanish (Español)</option>
-                                <option value="it">Italian (Italiano)</option>
-                                <option value="pt">Portuguese (Português)</option>
-                                <option value="ru">Russian (Русский)</option>
-                                <option value="zh">Chinese (中文)</option>
-                                <option value="ja">Japanese (日本語)</option>
-                                <option value="ko">Korean (한국어)</option>
                                 <option value="ar">Arabic (العربية)</option>
                                 <option value="bn">Bengali (বাংলা)</option>
                                 <option value="mr">Marathi (मराठी)</option>
+                                <option value="ru">Russian (Русский)</option>
+                                <option value="zh">Chinese (中文)</option>
+                                <option value="ja">Japanese (日本語)</option>
                             </select>
                         </div>
 
@@ -259,56 +245,116 @@
                             class="flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 via-amber-600 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold text-xs rounded-xl shadow-lg shadow-amber-500/25 whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer"
                         >
                             <i id="btnIcon" class="ph-bold ph-lightning text-amber-200 text-base"></i>
-                            <span id="btnText">Process Pipeline</span>
+                            <span id="btnText">Run Intelligence Pipeline</span>
                         </button>
                     </div>
 
                 </div>
             </div>
 
-            <!-- Error Banner -->
-            <div id="errorBanner" class="hidden mt-3 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
-                <i class="ph-bold ph-warning-circle text-rose-600 text-base"></i>
-                <span id="errorMessage">An error occurred during pipeline execution.</span>
+            <!-- LIVE PIPELINE PROGRESS CHECKLIST -->
+            <div id="progressContainer" class="hidden mt-4 p-4 rounded-2xl bg-white/90 border border-amber-200 shadow-md">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-extrabold text-amber-900 uppercase tracking-wider">Pipeline Execution Progress</span>
+                    <span id="progressStepCount" class="text-xs font-mono font-bold text-amber-700">0/5 Completed</span>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-[11px] font-medium">
+                    <div id="step-extract" class="p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5">
+                        <i class="ph-bold ph-circle text-slate-400"></i> 1. Extraction
+                    </div>
+                    <div id="step-lang" class="p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5">
+                        <i class="ph-bold ph-circle text-slate-400"></i> 2. Language
+                    </div>
+                    <div id="step-chunk" class="p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5">
+                        <i class="ph-bold ph-circle text-slate-400"></i> 3. Chunking
+                    </div>
+                    <div id="step-summary" class="p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5">
+                        <i class="ph-bold ph-circle text-slate-400"></i> 4. Synthesis
+                    </div>
+                    <div id="step-nlp" class="p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5">
+                        <i class="ph-bold ph-circle text-slate-400"></i> 5. Intelligence
+                    </div>
+                </div>
+            </div>
+
+            <!-- EXPLICIT ERROR BANNER -->
+            <div id="errorBanner" class="hidden mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-300 text-rose-900 shadow-md">
+                <div class="flex items-start gap-3">
+                    <i class="ph-bold ph-warning-circle text-rose-600 text-xl flex-shrink-0 mt-0.5"></i>
+                    <div class="flex-1">
+                        <h4 class="font-extrabold text-xs uppercase tracking-wider text-rose-800">Pipeline Execution Error</h4>
+                        <p id="errorMessage" class="text-sm font-medium mt-0.5">An unexpected error occurred.</p>
+                        <div id="errorDetails" class="text-xs font-mono text-rose-700/80 mt-1"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
         <!-- DASHBOARD GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div id="resultsGrid" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
             <!-- LEFT MAIN FEED (2 COLS) -->
             <div class="lg:col-span-2 space-y-6">
                 
+                <!-- Article Title & Metadata Bar -->
+                <div id="articleMetaCard" class="hidden glass-card p-5 rounded-2xl">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span id="detectedLangBadge" class="text-[10px] font-bold uppercase font-mono px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                TA • TAMIL
+                            </span>
+                            <span id="topicBadge" class="text-[10px] font-bold uppercase font-mono px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                                LOCAL NEWS
+                            </span>
+                        </div>
+                        <span id="readingTimeText" class="text-xs font-mono text-amber-900/60 font-semibold">~2 min read</span>
+                    </div>
+                    <h2 id="articleHeading" class="text-lg font-extrabold text-amber-950 mt-2 leading-snug"></h2>
+                    <p id="articleSourceUrl" class="text-xs font-mono text-amber-800/60 truncate mt-0.5"></p>
+                </div>
+
                 <!-- Abstractive Summary Card -->
                 <div class="glass-card p-6 rounded-2xl relative">
-                    <div class="flex justify-between items-center mb-4">
+                    <div class="flex flex-wrap justify-between items-center mb-4 gap-2">
                         <div class="flex items-center gap-2">
                             <i class="ph-bold ph-layers text-amber-600 text-lg"></i>
                             <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
                                 Abstractive Hierarchical Summary
                             </h3>
+                            <span id="pipelineTypeBadge" class="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-300">
+                                V2.1
+                            </span>
                         </div>
 
+                        <!-- Action Controls -->
                         <div class="flex items-center gap-2">
-                            <button onclick="speakSummary()" title="Listen in browser" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                            <button onclick="downloadPdfReport()" id="pdfBtn" title="Download Unicode PDF" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-emerald-600 text-white font-bold text-xs shadow-sm hover:from-amber-600 hover:to-emerald-700 transition">
+                                <i class="ph-bold ph-file-pdf text-sm"></i> Download PDF
+                            </button>
+                            <button onclick="speakSummary()" title="Listen in browser" class="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
                                 <i class="ph-bold ph-speaker-high text-sm"></i>
                             </button>
-                            <button onclick="copySummary()" title="Copy to clipboard" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                            <button onclick="copySummary()" title="Copy to clipboard" class="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
                                 <i class="ph-bold ph-copy text-sm"></i>
                             </button>
-                            <button onclick="downloadSummaryText()" title="Download text file" class="p-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
-                                <i class="ph-bold ph-download-simple text-sm"></i>
+                            <button onclick="exportData('json')" title="Export JSON" class="p-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 text-xs transition">
+                                <i class="ph-bold ph-code text-sm"></i>
                             </button>
                         </div>
                     </div>
 
+                    <!-- Summary Body -->
                     <p id="summaryBody" class="text-slate-700 leading-relaxed text-sm font-medium">
-                        Researchers have deployed a token-aware Map-Reduce summary pipeline engineered to eliminate context loss across long-form document processing. By coupling semantic sentence vector embeddings with Maximal Marginal Relevance (MMR), the system achieves superior compression while preserving context integrity across multi-chunk inputs.
+                        Enter a news URL or text above and click <span class="font-bold text-amber-800">"Run Intelligence Pipeline"</span> to generate an abstractive summary, extract MMR keypoints, compute sentiment distributions, and download Unicode PDF reports.
                     </p>
 
-                    <div id="shareLinkContainer" class="hidden mt-4 pt-3 border-t border-amber-200/60 flex items-center justify-between text-xs">
-                        <span class="text-amber-900/60 font-mono">Shareable Link:</span>
-                        <a id="shareLinkAnchor" href="#" target="_blank" class="text-amber-700 underline font-semibold">View / Share Report</a>
+                    <!-- Collapsible Extracted Article View -->
+                    <div id="extractedTextContainer" class="hidden mt-5 pt-4 border-t border-amber-200/60">
+                        <button onclick="toggleExtractedText()" class="flex items-center gap-1.5 text-xs font-bold text-amber-800 hover:text-amber-950">
+                            <i id="toggleTextIcon" class="ph-bold ph-caret-down"></i>
+                            <span id="toggleTextLabel">View Extracted Raw Article Text</span>
+                        </button>
+                        <div id="extractedTextContent" class="hidden mt-2 p-3.5 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-slate-700 max-h-60 overflow-y-auto whitespace-pre-line leading-relaxed font-normal"></div>
                     </div>
                 </div>
 
@@ -322,17 +368,8 @@
                     </div>
 
                     <div id="keyPointsList" class="space-y-3">
-                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
-                            <div class="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 flex-shrink-0 shadow-sm shadow-emerald-400"></div>
-                            <span class="text-sm text-slate-800 font-medium">Replaces naive sentence truncation with high-dimensional vector space semantic distance scoring.</span>
-                        </div>
-                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
-                            <div class="w-2 h-2 rounded-full bg-amber-500 mt-1.5 flex-shrink-0 shadow-sm shadow-amber-400"></div>
-                            <span class="text-sm text-slate-800 font-medium">Token-aware chunking algorithm guarantees zero sentence clipping across chunk boundaries.</span>
-                        </div>
-                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
-                            <div class="w-2 h-2 rounded-full bg-rose-500 mt-1.5 flex-shrink-0 shadow-sm shadow-rose-400"></div>
-                            <span class="text-sm text-slate-800 font-medium">Sentence-level translation prevents truncation degradation across multilingual channels.</span>
+                        <div class="p-4 rounded-xl bg-white/50 border border-amber-100 text-center text-xs text-slate-400 italic">
+                            Key points extracted verbatim with Maximal Marginal Relevance will appear here.
                         </div>
                     </div>
                 </div>
@@ -344,15 +381,7 @@
                             Named Entities
                         </span>
                         <div id="entitiesContainer" class="flex flex-wrap gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100/80 border border-amber-300 text-amber-900">
-                                <i class="ph-bold ph-buildings"></i> OpenAI
-                            </span>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100/80 border border-rose-300 text-rose-900">
-                                <i class="ph-bold ph-user"></i> Sam Altman
-                            </span>
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100/80 border border-emerald-300 text-emerald-900">
-                                <i class="ph-bold ph-map-pin"></i> California
-                            </span>
+                            <span class="text-xs text-slate-400 italic">No entities extracted yet.</span>
                         </div>
                     </div>
 
@@ -361,10 +390,34 @@
                             Salient Keywords
                         </span>
                         <div id="keywordsContainer" class="flex flex-wrap gap-2">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#Summarization</span>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#NLP Pipelines</span>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#Embeddings</span>
+                            <span class="text-xs text-slate-400 italic">No keywords extracted yet.</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- "ASK ABOUT THIS ARTICLE" (Article Q&A) -->
+                <div id="qaSection" class="glass-card p-6 rounded-2xl">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="ph-bold ph-chat-centered-text text-amber-600 text-lg"></i>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                            Ask About This Article (Extractive Q&A)
+                        </h3>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input 
+                            id="qaInput" 
+                            type="text" 
+                            placeholder="Ask a question (e.g. 'When will the power cut happen?' or 'Which areas are affected?')..." 
+                            class="flex-1 bg-white border border-amber-200 rounded-xl px-3.5 py-2.5 text-xs text-slate-800 outline-none focus:border-amber-500 shadow-sm"
+                            onkeydown="if(event.key === 'Enter') submitQuestion();"
+                        >
+                        <button onclick="submitQuestion()" class="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow transition">
+                            Ask
+                        </button>
+                    </div>
+                    <div id="qaAnswerBox" class="hidden mt-3 p-3.5 rounded-xl bg-amber-50/80 border border-amber-200 text-xs text-slate-800 leading-relaxed">
+                        <div class="font-bold text-amber-950 mb-1">Answer from Article:</div>
+                        <p id="qaAnswerText" class="font-medium"></p>
                     </div>
                 </div>
 
@@ -373,18 +426,18 @@
             <!-- RIGHT SIDEBAR (1 COL) -->
             <div class="space-y-6">
                 
-                <!-- Quick Performance Stats -->
+                <!-- Dynamic Article Stats -->
                 <div class="grid grid-cols-3 gap-3">
                     <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
-                        <div id="statWords" class="text-base font-bold font-mono text-amber-900">4,120</div>
+                        <div id="statWords" class="text-base font-bold font-mono text-amber-900">-</div>
                         <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Words</div>
                     </div>
                     <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
-                        <div id="statRatio" class="text-base font-bold font-mono text-amber-900">82%</div>
+                        <div id="statRatio" class="text-base font-bold font-mono text-amber-900">-</div>
                         <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Ratio</div>
                     </div>
                     <div class="p-3.5 rounded-xl bg-white/80 border border-amber-200/80 text-center shadow-sm">
-                        <div id="statLatency" class="text-base font-bold font-mono text-amber-900">1.2s</div>
+                        <div id="statLatency" class="text-base font-bold font-mono text-amber-900">-</div>
                         <div class="text-[10px] uppercase font-extrabold text-amber-900/50">Latency</div>
                     </div>
                 </div>
@@ -399,29 +452,48 @@
                     </div>
 
                     <div class="h-3 w-full bg-amber-100 rounded-full overflow-hidden flex gap-0.5 mb-3 p-0.5 border border-amber-200">
-                        <div id="barPos" class="h-full bg-emerald-500 rounded-l-full" style="width: 68%" title="Positive"></div>
-                        <div id="barNeu" class="h-full bg-amber-400" style="width: 22%" title="Neutral"></div>
-                        <div id="barNeg" class="h-full bg-rose-500 rounded-r-full" style="width: 10%" title="Negative"></div>
+                        <div id="barPos" class="h-full bg-emerald-500 rounded-l-full" style="width: 33%" title="Positive"></div>
+                        <div id="barNeu" class="h-full bg-amber-400" style="width: 34%" title="Neutral"></div>
+                        <div id="barNeg" class="h-full bg-rose-500 rounded-r-full" style="width: 33%" title="Negative"></div>
                     </div>
 
                     <div class="flex justify-between text-xs font-mono font-bold">
-                        <span id="labelPos" class="text-emerald-700">68% Pos</span>
-                        <span id="labelNeu" class="text-amber-700">22% Neu</span>
-                        <span id="labelNeg" class="text-rose-700">10% Neg</span>
+                        <span id="labelPos" class="text-emerald-700">- Pos</span>
+                        <span id="labelNeu" class="text-amber-700">- Neu</span>
+                        <span id="labelNeg" class="text-rose-700">- Neg</span>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-2 italic font-mono">Measures emotional polarity across segments.</p>
+                    <p class="text-[10px] text-slate-400 mt-2 italic font-mono">Full-document segment aggregation.</p>
                 </div>
 
-                <!-- Multilingual & Audio Tools -->
-                <div class="glass-card p-6 rounded-2xl space-y-4">
+                <!-- Framing Signals (Experimental) -->
+                <div id="framingCard" class="glass-card p-5 rounded-2xl space-y-2">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i class="ph-bold ph-scales text-amber-600 text-base"></i>
+                        <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
+                            Framing Signals (Linguistic)
+                        </h3>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-600">Sensational Language:</span>
+                        <span id="sigSensational" class="font-bold text-slate-800">Low</span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                        <span class="text-slate-600">Attribution Density:</span>
+                        <span id="sigAttribution" class="font-bold text-slate-800">Moderate</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 italic">Experimental indicators; does not determine factual bias.</p>
+                </div>
+
+                <!-- Server-Side Audio MP3 -->
+                <div class="glass-card p-6 rounded-2xl space-y-3">
                     <div class="flex items-center gap-2">
                         <i class="ph-bold ph-speaker-high text-amber-600 text-lg"></i>
                         <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
-                            Server-Side Audio (MP3)
+                            Audio Briefing (MP3)
                         </h3>
                     </div>
 
-                    <button onclick="requestServerTTS()" id="ttsBtn" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition-all shadow-md shadow-amber-500/20 cursor-pointer">
+                    <button onclick="requestServerTTS()" id="ttsBtn" class="w-full py-2.5 px-4 bg-gradient-to-r from-amber-500 to-emerald-600 hover:from-amber-600 hover:to-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-2 transition shadow cursor-pointer">
                         <i class="ph-bold ph-waveform text-base"></i>
                         <span id="ttsBtnText">Generate & Stream MP3</span>
                     </button>
@@ -432,22 +504,23 @@
                     </div>
                 </div>
 
-                <!-- Persistent Recent Summaries -->
+                <!-- Searchable History -->
                 <div class="glass-card p-6 rounded-2xl space-y-3">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2">
                             <i class="ph-bold ph-clock-counter-clockwise text-amber-600 text-lg"></i>
                             <h3 class="text-xs font-extrabold uppercase tracking-wider text-amber-900/70">
-                                Recent History (SQLite DB)
+                                History (SQLite Database)
                             </h3>
                         </div>
                     </div>
 
-                    <div id="recentHistoryList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    <div id="recentHistoryList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
                         {% if recent %}
                             {% for item in recent %}
                             <div class="p-2.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-amber-400 transition flex items-center justify-between text-xs">
                                 <a href="/s/{{ item.id }}" class="truncate font-medium text-slate-700 hover:text-amber-800 flex-1 mr-2">{{ item.title }} ({{ item.length }})</a>
+                                <a href="/api/reports/{{ item.id }}/pdf" class="text-emerald-700 font-bold hover:underline mr-2" title="Download PDF">PDF</a>
                                 <a href="/s/{{ item.id }}" class="text-amber-600 hover:underline">View</a>
                             </div>
                             {% endfor %}
@@ -467,6 +540,9 @@
     <script>
         let currentMode = 'url';
         let currentLength = 'medium';
+        let currentSummaryId = null;
+        let currentArticleText = "";
+        let currentSummaryData = null;
 
         function setMode(mode) {
             currentMode = mode;
@@ -494,7 +570,6 @@
             });
         }
 
-        // Live text counter
         const textInput = document.getElementById('textInput');
         textInput.addEventListener('input', () => {
             const val = textInput.value;
@@ -502,16 +577,73 @@
             document.getElementById('wordCount').textContent = `${val.trim() ? val.trim().split(/\s+/).length : 0} words`;
         });
 
+        function resetToProcessingState() {
+            // Explicitly clear all analysis and stale values
+            document.getElementById('errorBanner').classList.add('hidden');
+            document.getElementById('progressContainer').classList.remove('hidden');
+
+            document.getElementById('statWords').textContent = "...";
+            document.getElementById('statRatio').textContent = "...";
+            document.getElementById('statLatency').textContent = "...";
+
+            document.getElementById('summaryBody').textContent = "Processing article through multilingual intelligence pipeline...";
+            document.getElementById('keyPointsList').innerHTML = '<div class="p-3 text-center text-xs text-amber-800 animate-pulse">Extracting salient MMR points...</div>';
+            document.getElementById('entitiesContainer').innerHTML = '<span class="text-xs text-amber-800 animate-pulse">Detecting entities...</span>';
+            document.getElementById('keywordsContainer').innerHTML = '<span class="text-xs text-amber-800 animate-pulse">Extracting keywords...</span>';
+
+            ['extract', 'lang', 'chunk', 'summary', 'nlp'].forEach(s => {
+                const el = document.getElementById(`step-${s}`);
+                el.className = 'p-2 rounded-lg bg-amber-50 text-slate-500 border border-amber-100 flex items-center gap-1.5';
+                el.querySelector('i').className = 'ph-bold ph-circle text-slate-400';
+            });
+            document.getElementById('progressStepCount').textContent = "0/5 Running";
+        }
+
+        function updateProgressStep(stepName, stepNum) {
+            const el = document.getElementById(`step-${stepName}`);
+            if (el) {
+                el.className = 'p-2 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300 font-semibold flex items-center gap-1.5';
+                el.querySelector('i').className = 'ph-bold ph-check-circle text-emerald-600';
+            }
+            document.getElementById('progressStepCount').textContent = `${stepNum}/5 Completed`;
+        }
+
+        function clearAllToErrorState(errorMsg, errorCode) {
+            document.getElementById('progressContainer').classList.add('hidden');
+            const errBanner = document.getElementById('errorBanner');
+            errBanner.classList.remove('hidden');
+
+            document.getElementById('errorMessage').textContent = errorMsg;
+            document.getElementById('errorDetails').textContent = errorCode ? `Reason Code: ${errorCode}` : '';
+
+            // Cleanly wipe all cards - NEVER display stale demo data
+            document.getElementById('statWords').textContent = "-";
+            document.getElementById('statRatio').textContent = "-";
+            document.getElementById('statLatency').textContent = "-";
+
+            document.getElementById('summaryBody').textContent = "No analysis available. Please check the error details above.";
+            document.getElementById('keyPointsList').innerHTML = '<div class="p-4 text-center text-xs text-slate-400 italic">No key points extracted.</div>';
+            document.getElementById('entitiesContainer').innerHTML = '<span class="text-xs text-slate-400 italic">No entities extracted.</span>';
+            document.getElementById('keywordsContainer').innerHTML = '<span class="text-xs text-slate-400 italic">No keywords extracted.</span>';
+
+            document.getElementById('labelPos').textContent = "- Pos";
+            document.getElementById('labelNeu').textContent = "- Neu";
+            document.getElementById('labelNeg').textContent = "- Neg";
+
+            document.getElementById('articleMetaCard').classList.add('hidden');
+            document.getElementById('extractedTextContainer').classList.add('hidden');
+        }
+
         async function triggerProcessing() {
             const btn = document.getElementById('processBtn');
             const icon = document.getElementById('btnIcon');
             const text = document.getElementById('btnText');
-            const errBanner = document.getElementById('errorBanner');
-            errBanner.classList.add('hidden');
 
             icon.className = 'ph-bold ph-spinner animate-spin text-base';
-            text.innerText = 'Processing Pipeline...';
+            text.innerText = 'Analyzing...';
             btn.disabled = true;
+
+            resetToProcessingState();
 
             const lang = document.getElementById('languageSelect').value;
 
@@ -521,6 +653,8 @@
                     const textB = document.getElementById('compareTextB').value.trim();
                     if (!textA || !textB) throw new Error("Please provide text for both Article A and Article B.");
 
+                    updateProgressStep('extract', 1);
+                    updateProgressStep('chunk', 2);
                     const res = await fetch('/api/compare', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
@@ -529,6 +663,8 @@
                     const payload = await res.json();
                     if (!payload.success) throw new Error(payload.error ? payload.error.message : "Comparison failed");
 
+                    updateProgressStep('summary', 4);
+                    updateProgressStep('nlp', 5);
                     renderComparisonResult(payload.data);
                 } else {
                     const reqBody = {
@@ -545,18 +681,29 @@
                         reqBody.text = raw;
                     }
 
-                    // 1. Run Summarization
+                    updateProgressStep('extract', 1);
+
+                    // 1. Run Multilingual Summarization
                     const summRes = await fetch('/api/summarize', {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json'},
                         body: JSON.stringify(reqBody)
                     });
                     const summPayload = await summRes.json();
-                    if (!summPayload.success) throw new Error(summPayload.error ? summPayload.error.message : "Summarization failed");
+                    if (!summPayload.success) {
+                        const err = summPayload.error || {};
+                        throw { message: err.message || "Summarization failed", code: err.code };
+                    }
 
+                    updateProgressStep('lang', 2);
+                    updateProgressStep('chunk', 3);
+                    updateProgressStep('summary', 4);
+
+                    currentSummaryData = summPayload.data;
+                    currentSummaryId = summPayload.data.summary_id;
                     renderSummaryResult(summPayload.data);
 
-                    // 2. Run NLP Intelligence Analysis in background
+                    // 2. Run NLP Intelligence Analysis
                     const textForAnalysis = currentMode === 'url' ? summPayload.data.original_url : reqBody.text;
                     const analysisRes = await fetch('/api/analyze', {
                         method: 'POST',
@@ -565,15 +712,15 @@
                     });
                     const analysisPayload = await analysisRes.json();
                     if (analysisPayload.success) {
+                        updateProgressStep('nlp', 5);
                         renderAnalysisResult(analysisPayload.data);
                     }
                 }
             } catch (err) {
-                errBanner.classList.remove('hidden');
-                document.getElementById('errorMessage').textContent = err.message;
+                clearAllToErrorState(err.message || String(err), err.code || 'API_REQUEST_FAILED');
             } finally {
                 icon.className = 'ph-bold ph-lightning text-amber-200 text-base';
-                text.innerText = 'Process Pipeline';
+                text.innerText = 'Run Intelligence Pipeline';
                 btn.disabled = false;
             }
         }
@@ -582,18 +729,29 @@
             document.getElementById('summaryBody').textContent = data.summary;
             document.getElementById('statRatio').textContent = `${Math.round(data.compression_ratio)}%`;
             document.getElementById('statLatency').textContent = `${(data.processing_time_ms / 1000).toFixed(1)}s`;
-            document.getElementById('statWords').textContent = data.summary.split(/\s+/).length;
+            document.getElementById('statWords').textContent = data.word_count || data.summary_word_count || 0;
 
-            const shareAnchor = document.getElementById('shareLinkAnchor');
-            const shareContainer = document.getElementById('shareLinkContainer');
-            shareAnchor.href = `/s/${data.summary_id}?lang=${data.language}`;
-            shareAnchor.textContent = `View Shareable Report (${data.summary_id})`;
-            shareContainer.classList.remove('hidden');
+            // Metadata Card
+            const metaCard = document.getElementById('articleMetaCard');
+            metaCard.classList.remove('hidden');
+            document.getElementById('articleHeading').textContent = data.original_title || "Article Summary";
+            document.getElementById('articleSourceUrl').textContent = data.original_url || "Direct Text Input";
+            document.getElementById('detectedLangBadge').textContent = `${(data.source_language || 'EN').toUpperCase()} • ${data.language_name || 'ENGLISH'}`;
+            document.getElementById('topicBadge').textContent = data.topic || 'GENERAL';
+            document.getElementById('readingTimeText').textContent = data.reading_time || '~2 min read';
+            document.getElementById('pipelineTypeBadge').textContent = data.source_language === 'en' ? 'Direct Map-Reduce' : 'Translate-Summarize-Translate';
+
+            // Extracted text box
+            if (data.raw_text || data.cleaned_text) {
+                currentArticleText = data.cleaned_text || data.raw_text;
+                document.getElementById('extractedTextContainer').classList.remove('hidden');
+                document.getElementById('extractedTextContent').textContent = currentArticleText;
+            }
         }
 
         function renderAnalysisResult(data) {
             // Sentiment
-            const dist = data.sentiment.distribution;
+            const dist = data.sentiment.distribution || {positive: 0.33, neutral: 0.34, negative: 0.33};
             const pPos = Math.round(dist.positive * 100);
             const pNeu = Math.round(dist.neutral * 100);
             const pNeg = Math.round(dist.negative * 100);
@@ -609,47 +767,128 @@
             // Key Points
             const kpContainer = document.getElementById('keyPointsList');
             kpContainer.innerHTML = '';
-            data.key_points.forEach((kp, idx) => {
-                const dotColor = idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-amber-500' : 'bg-rose-500';
-                kpContainer.innerHTML += `
-                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
-                        <div class="w-2 h-2 rounded-full ${dotColor} mt-1.5 flex-shrink-0"></div>
-                        <span class="text-sm text-slate-800 font-medium">${kp.text}</span>
-                    </div>
-                `;
-            });
+            if (data.key_points && data.key_points.length > 0) {
+                data.key_points.forEach((kp, idx) => {
+                    const dotColor = idx === 0 ? 'bg-emerald-500' : idx === 1 ? 'bg-amber-500' : 'bg-rose-500';
+                    kpContainer.innerHTML += `
+                        <div class="flex items-start gap-3 p-3.5 rounded-xl bg-white/70 border border-amber-200/60 hover:border-emerald-500/40 transition-all">
+                            <div class="w-2 h-2 rounded-full ${dotColor} mt-1.5 flex-shrink-0"></div>
+                            <span class="text-sm text-slate-800 font-medium">${kp.text}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                kpContainer.innerHTML = '<div class="p-3 text-center text-xs text-slate-400 italic">No salient key points detected.</div>';
+            }
 
             // Keywords
             const kwContainer = document.getElementById('keywordsContainer');
             kwContainer.innerHTML = '';
-            data.keywords.forEach(kw => {
-                kwContainer.innerHTML += `<span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#${kw}</span>`;
-            });
+            if (data.keywords && data.keywords.length > 0) {
+                data.keywords.forEach(kw => {
+                    kwContainer.innerHTML += `<span class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-amber-200 text-slate-700 shadow-sm">#${kw}</span>`;
+                });
+            } else {
+                kwContainer.innerHTML = '<span class="text-xs text-slate-400 italic">No keywords detected.</span>';
+            }
 
             // Entities
             const entContainer = document.getElementById('entitiesContainer');
             entContainer.innerHTML = '';
-            data.entities.slice(0, 6).forEach(e => {
-                const icon = e.label === 'ORGANIZATION' ? 'ph-buildings' : e.label === 'PERSON' ? 'ph-user' : 'ph-map-pin';
-                entContainer.innerHTML += `
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100/80 border border-amber-300 text-amber-900">
-                        <i class="ph-bold ${icon}"></i> ${e.text}
-                    </span>
-                `;
-            });
+            if (data.entities && data.entities.length > 0) {
+                data.entities.slice(0, 8).forEach(e => {
+                    const icon = e.label === 'ORGANIZATION' ? 'ph-buildings' : e.label === 'PERSON' ? 'ph-user' : 'ph-map-pin';
+                    entContainer.innerHTML += `
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-100/80 border border-amber-300 text-amber-900">
+                            <i class="ph-bold ${icon}"></i> ${e.text}
+                        </span>
+                    `;
+                });
+            } else {
+                entContainer.innerHTML = '<span class="text-xs text-slate-400 italic">No entities detected.</span>';
+            }
+
+            // Framing signals
+            if (data.framing_signals) {
+                document.getElementById('sigSensational').textContent = data.framing_signals.sensational_language || "Low";
+                document.getElementById('sigAttribution').textContent = data.framing_signals.attribution_density || "Moderate";
+            }
         }
 
         function renderComparisonResult(data) {
             document.getElementById('summaryBody').innerHTML = `
-                <strong>Semantic Similarity:</strong> ${(data.similarity_score * 100).toFixed(1)}%<br><br>
-                <strong>Common Topics:</strong> ${data.common_keywords.join(', ') || 'General thematic alignment'}<br><br>
-                <strong>Unique to Article A:</strong> ${data.unique_to_first.slice(0, 2).join(' ')}<br><br>
-                <strong>Unique to Article B:</strong> ${data.unique_to_second.slice(0, 2).join(' ')}
+                <div class="space-y-3 text-xs">
+                    <div><strong>Semantic Similarity:</strong> ${(data.similarity_score * 100).toFixed(1)}%</div>
+                    <div><strong>Shared Themes:</strong> ${data.common_keywords.join(', ') || 'General thematic alignment'}</div>
+                    <div class="p-3 rounded-xl bg-amber-50 border border-amber-200"><strong>Unique to Article A:</strong> ${data.unique_to_first.slice(0, 2).join(' ')}</div>
+                    <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200"><strong>Unique to Article B:</strong> ${data.unique_to_second.slice(0, 2).join(' ')}</div>
+                </div>
             `;
             document.getElementById('statRatio').textContent = `${Math.round(data.similarity_score * 100)}% Sim`;
         }
 
-        // Browser Web Speech TTS
+        // Q&A Execution
+        async function submitQuestion() {
+            const input = document.getElementById('qaInput');
+            const question = input.value.trim();
+            if (!question) return;
+
+            const answerBox = document.getElementById('qaAnswerBox');
+            const answerText = document.getElementById('qaAnswerText');
+            answerBox.classList.remove('hidden');
+            answerText.textContent = "Retrieving answer from article content...";
+
+            const url = currentMode === 'url' ? document.getElementById('urlInput').value.trim() : null;
+            const text = currentArticleText || document.getElementById('textInput').value.trim();
+
+            try {
+                const res = await fetch('/api/article/ask', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ question: question, text: text, url: url })
+                });
+                const payload = await res.json();
+                if (payload.success) {
+                    answerText.textContent = payload.data.answer;
+                } else {
+                    answerText.textContent = payload.error.message;
+                }
+            } catch (e) {
+                answerText.textContent = `Error: ${e.message}`;
+            }
+        }
+
+        function downloadPdfReport() {
+            if (currentSummaryId) {
+                const lang = document.getElementById('languageSelect').value;
+                window.open(`/api/reports/${currentSummaryId}/pdf?lang=${lang === 'auto' ? '' : lang}`, '_blank');
+            } else {
+                alert("Please run an analysis first to generate a PDF report.");
+            }
+        }
+
+        function exportData(format) {
+            if (!currentSummaryData) {
+                alert("No analysis available to export.");
+                return;
+            }
+            if (format === 'json') {
+                const blob = new Blob([JSON.stringify(currentSummaryData, null, 2)], {type: 'application/json'});
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `news_intelligence_${currentSummaryId || 'export'}.json`;
+                a.click();
+            }
+        }
+
+        function toggleExtractedText() {
+            const content = document.getElementById('extractedTextContent');
+            const icon = document.getElementById('toggleTextIcon');
+            const isHidden = content.classList.contains('hidden');
+            content.classList.toggle('hidden', !isHidden);
+            icon.className = isHidden ? 'ph-bold ph-caret-up' : 'ph-bold ph-caret-down';
+        }
+
         function speakSummary() {
             const text = document.getElementById('summaryBody').innerText;
             if (!text) return;
@@ -657,7 +896,6 @@
             speechSynthesis.speak(utter);
         }
 
-        // Server-Side MP3 TTS
         async function requestServerTTS() {
             const text = document.getElementById('summaryBody').innerText;
             const lang = document.getElementById('languageSelect').value;
@@ -668,7 +906,7 @@
                 const res = await fetch('/api/tts', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ text: text, language: lang })
+                    body: JSON.stringify({ text: text, language: lang === 'auto' ? 'en' : lang })
                 });
                 const payload = await res.json();
                 if (!payload.success) throw new Error(payload.error.message);
@@ -692,15 +930,6 @@
             const text = document.getElementById('summaryBody').innerText;
             navigator.clipboard.writeText(text);
             alert("Summary copied to clipboard!");
-        }
-
-        function downloadSummaryText() {
-            const text = document.getElementById('summaryBody').innerText;
-            const blob = new Blob([text], {type: 'text/plain'});
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = 'news_summary.txt';
-            a.click();
         }
     </script>
 </body>

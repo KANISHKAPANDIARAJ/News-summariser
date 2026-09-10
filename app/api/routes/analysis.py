@@ -1,5 +1,7 @@
-"""Intelligence Analysis REST API route."""
+"""Intelligence Analysis REST API route with multilingual support and framing signals."""
 
+import re
+from typing import Dict, Any, List, Optional
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 from app.api.schemas.analysis import AnalyzeRequest
@@ -10,11 +12,8 @@ from app.services.sentiment_analyzer import SentimentAnalyzer
 from app.services.keypoint_extractor import KeypointExtractor
 from app.services.keyword_extractor import KeywordExtractor
 from app.services.entity_extractor import EntityExtractor
-from app.db import get_db_session
-from app.repositories.article_repo import ArticleRepository
-from app.repositories.summary_repo import SummaryRepository
-from app.models.analysis import AnalysisResult
-from app.utils.cache import compute_content_hash
+from app.services.language_detector import LanguageDetector
+from app.services.topic_classifier import TopicClassifier
 from app.constants import ErrorCodes
 from app.utils.logger import logger
 
@@ -25,9 +24,32 @@ keypoint_extractor = KeypointExtractor()
 keyword_extractor = KeywordExtractor()
 entity_extractor = EntityExtractor()
 
+def compute_framing_signals(text: str) -> Dict[str, str]:
+    """Computes experimental linguistic framing indicators."""
+    text_lower = text.lower()
+    
+    # Emotional / Sensational vocabulary
+    sensational_words = ["shocking", "unbelievable", "disaster", "catastrophe", "massive", "unprecedented", "horrific", "explosive", "scandal"]
+    sensational_count = sum(len(re.findall(rf"\b{w}\b", text_lower)) for w in sensational_words)
+    
+    # Attribution signals (quotes, according to, said, reported)
+    attribution_words = ["said", "stated", "according to", "reported", "spokesperson", "officials", "confirmed", "announced", "கூறினார்", "தெரிவித்தார்"]
+    attr_count = sum(len(re.findall(rf"\b{w}\b", text_lower)) for w in attribution_words)
+    
+    words_total = max(1, len(text.split()))
+    
+    attr_density = "High" if (attr_count / words_total) > 0.01 else "Moderate" if (attr_count / words_total) > 0.003 else "Low"
+    sensational_level = "High" if sensational_count >= 3 else "Moderate" if sensational_count >= 1 else "Low"
+    
+    return {
+        "sensational_language": sensational_level,
+        "attribution_density": attr_density,
+        "disclaimer": "Experimental linguistic framing indicators, not a factual determination of bias."
+    }
+
 @analysis_bp.route("/api/analyze", methods=["POST"])
 def analyze_article():
-    """Extracts sentiment distribution, MMR key points, keywords, and entities from article."""
+    """Extracts sentiment distribution, MMR key points, keywords, entities, and framing signals."""
     try:
         data = request.get_json(force=True, silent=True) or {}
         req = AnalyzeRequest(**data)
@@ -53,6 +75,11 @@ def analyze_article():
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
                 message=str(ee)
             ).model_dump()), 400
+        except Exception as e:
+            return jsonify(ApiResponse.fail(
+                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
+                message=f"Extraction failed: {e}"
+            ).model_dump()), 400
     else:
         raw_text = req.text
 
@@ -63,38 +90,43 @@ def analyze_article():
             message="Article content is too short for analysis."
         ).model_dump()), 400
 
-    content_hash = compute_content_hash(cleaned_text)
+    lang_info = LanguageDetector.detect(cleaned_text)
+    topic_info = TopicClassifier.classify(cleaned_text)
 
-    # 1. Run Intelligence Pipeline
-    sentiment = sentiment_analyzer.analyze(cleaned_text)
-    key_points = keypoint_extractor.extract_key_points(cleaned_text, top_n=req.num_key_points)
-    keywords = keyword_extractor.extract_keywords(cleaned_text, top_n=8)
-    entities = entity_extractor.extract_entities(cleaned_text)
+    # 1. Run Intelligence Pipeline with error tolerance
+    try:
+        sentiment = sentiment_analyzer.analyze(cleaned_text)
+    except Exception as e:
+        logger.warning(f"Sentiment analysis warning: {e}")
+        sentiment = {"label": "neutral", "score": 1.0, "distribution": {"positive": 0.33, "neutral": 0.34, "negative": 0.33}}
 
-    # 2. Persist to DB if associated with existing article
-    with get_db_session() as session:
-        article_repo = ArticleRepository(session)
-        summary_repo = SummaryRepository(session)
-        db_article = article_repo.get_by_content_hash(content_hash)
+    try:
+        key_points = keypoint_extractor.extract_key_points(cleaned_text, top_n=req.num_key_points)
+    except Exception as e:
+        logger.warning(f"Keypoint extraction warning: {e}")
+        key_points = []
 
-        if db_article:
-            existing_analysis = summary_repo.get_analysis_by_article_id(db_article.id)
-            if not existing_analysis:
-                analysis_rec = AnalysisResult(
-                    article_id=db_article.id,
-                    sentiment_label=sentiment["label"],
-                    sentiment_score=sentiment["score"],
-                    sentiment_distribution=sentiment["distribution"],
-                    key_points=key_points,
-                    keywords=keywords,
-                    entities=entities,
-                )
-                summary_repo.create_analysis(analysis_rec)
+    try:
+        keywords = keyword_extractor.extract_keywords(cleaned_text, top_n=8)
+    except Exception as e:
+        logger.warning(f"Keyword extraction warning: {e}")
+        keywords = []
+
+    try:
+        entities = entity_extractor.extract_entities(cleaned_text)
+    except Exception as e:
+        logger.warning(f"Entity extraction warning: {e}")
+        entities = []
+
+    framing = compute_framing_signals(cleaned_text)
 
     response_payload = {
+        "language": lang_info,
+        "topic": topic_info,
         "sentiment": sentiment,
         "key_points": key_points,
         "keywords": keywords,
         "entities": entities,
+        "framing_signals": framing,
     }
     return jsonify(ApiResponse.ok(response_payload).model_dump()), 200

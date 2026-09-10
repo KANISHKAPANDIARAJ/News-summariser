@@ -19,6 +19,8 @@ from app.api.routes.tts import tts_bp
 from app.api.routes.comparison import comparison_bp
 from app.api.routes.history import history_bp
 from app.api.routes.jobs import jobs_bp
+from app.api.routes.reports import reports_bp
+from app.api.routes.qa import qa_bp
 
 def create_app(config_class=None) -> Flask:
     """Application Factory creating and configuring the Flask application."""
@@ -58,6 +60,8 @@ def create_app(config_class=None) -> Flask:
     app.register_blueprint(comparison_bp)
     app.register_blueprint(history_bp)
     app.register_blueprint(jobs_bp)
+    app.register_blueprint(reports_bp)
+    app.register_blueprint(qa_bp)
 
     # Security Headers Middleware
     @app.after_request

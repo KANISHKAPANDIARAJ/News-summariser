@@ -2,6 +2,7 @@
 
 from typing import Dict, Any, Optional
 from urllib.parse import urlparse
+import re
 import requests
 from bs4 import BeautifulSoup
 

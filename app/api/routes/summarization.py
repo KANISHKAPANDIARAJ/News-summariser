@@ -1,31 +1,33 @@
-"""Summarization REST API routes."""
+"""Summarization REST API routes with multilingual support and partial success handling."""
 
+import time
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 from app.api.schemas.summary import SummarizeRequest, SummaryResponse
 from app.api.schemas.common import ApiResponse
 from app.services.article_extractor import ArticleExtractor, ArticleExtractionError
 from app.services.text_cleaner import TextCleaner
-from app.services.summarizer import HierarchicalSummarizer, SummarizationError
-from app.services.translator import TranslationService, TranslationError
+from app.services.multilingual_summarizer import MultilingualSummarizer
+from app.services.language_detector import LanguageDetector
+from app.services.topic_classifier import TopicClassifier
 from app.db import get_db_session
 from app.repositories.article_repo import ArticleRepository
 from app.repositories.summary_repo import SummaryRepository
 from app.models.article import Article
 from app.models.summary import Summary
-from app.models.translation import Translation
 from app.utils.cache import compute_content_hash
 from app.constants import ErrorCodes, SUPPORTED_LANGUAGES
 from app.utils.logger import logger
 
 summarization_bp = Blueprint("summarization_api", __name__)
 extractor = ArticleExtractor()
-summarizer = HierarchicalSummarizer()
-translator = TranslationService()
+multilingual_summarizer = MultilingualSummarizer()
 
 @summarization_bp.route("/api/summarize", methods=["POST"])
 def summarize_article():
-    """Generates an abstractive summary of an article from URL or raw text."""
+    """Generates an abstractive summary of an article from URL or raw text in English or regional languages."""
+    start_time = time.perf_counter()
+
     try:
         data = request.get_json(force=True, silent=True) or {}
         req = SummarizeRequest(**data)
@@ -42,8 +44,8 @@ def summarize_article():
             message="Either 'url' or 'text' must be provided."
         ).model_dump()), 400
 
-    target_lang = req.language.lower().strip()
-    if target_lang not in SUPPORTED_LANGUAGES:
+    target_lang = (req.language or "en").lower().strip()
+    if target_lang != "auto" and target_lang not in SUPPORTED_LANGUAGES:
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.UNSUPPORTED_LANGUAGE,
             message=f"Language '{target_lang}' is not supported."
@@ -71,6 +73,11 @@ def summarize_article():
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
                 message=str(ee)
             ).model_dump()), 400
+        except Exception as e:
+            return jsonify(ApiResponse.fail(
+                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
+                message=f"Extraction failed: {str(e)}"
+            ).model_dump()), 400
     else:
         raw_text = req.text
 
@@ -83,7 +90,36 @@ def summarize_article():
 
     content_hash = compute_content_hash(cleaned_text)
 
-    # 2. Database Persistence and Cache Check
+    # 2. Detect Language
+    lang_info = LanguageDetector.detect(cleaned_text)
+    source_lang = lang_info["language_code"]
+    effective_target_lang = source_lang if target_lang == "auto" else target_lang
+
+    # 3. Classify Topic & Reading Time
+    topic_info = TopicClassifier.classify(cleaned_text)
+    orig_words = len(cleaned_text.split())
+    reading_time = f"~{max(1, round(orig_words / 200))} min read"
+
+    # 4. Multilingual Summarization
+    try:
+        summ_res = multilingual_summarizer.summarize(
+            text=cleaned_text,
+            source_lang=source_lang,
+            target_lang=effective_target_lang,
+            length_profile=req.length_profile
+        )
+    except Exception as e:
+        logger.error(f"Multilingual summarization failure: {e}")
+        return jsonify(ApiResponse.fail(
+            code=ErrorCodes.SUMMARIZATION_FAILED,
+            message=f"Summarization pipeline failed: {str(e)}"
+        ).model_dump()), 500
+
+    total_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+    summary_words = len(summ_res["summary"].split())
+    comp_ratio = round((summary_words / max(1, orig_words)) * 100.0, 1)
+
+    # 5. Database Persistence
     with get_db_session() as session:
         article_repo = ArticleRepository(session)
         summary_repo = SummaryRepository(session)
@@ -100,66 +136,44 @@ def summarize_article():
                 image_url=image_url,
                 raw_text=raw_text,
                 cleaned_text=cleaned_text,
-                language=TextCleaner.detect_language(cleaned_text),
-                word_count=len(cleaned_text.split()),
+                language=source_lang,
+                word_count=orig_words,
             )
             article_repo.create(db_article)
 
-        # Check existing summary for this profile
-        db_summary = summary_repo.get_by_article_and_profile(db_article.id, req.length_profile)
-        if not db_summary:
-            try:
-                summ_res = summarizer.summarize(cleaned_text, length_profile=req.length_profile)
-                db_summary = Summary(
-                    article_id=db_article.id,
-                    summary_type="hierarchical_map_reduce",
-                    length_profile=req.length_profile,
-                    text=summ_res["summary"],
-                    compression_ratio=summ_res["compression_ratio"],
-                    processing_time_ms=summ_res["processing_time_ms"],
-                    model_name=summ_res["model_name"],
-                )
-                summary_repo.create_summary(db_summary)
-            except SummarizationError as se:
-                return jsonify(ApiResponse.fail(
-                    code=ErrorCodes.SUMMARIZATION_FAILED,
-                    message=str(se)
-                ).model_dump()), 500
-
-        # Translation check
-        final_summary_text = db_summary.text
-        if target_lang != "en":
-            db_trans = summary_repo.get_translation(db_summary.id, target_lang)
-            if not db_trans:
-                try:
-                    trans_res = translator.translate(db_summary.text, target_lang=target_lang)
-                    db_trans = Translation(
-                        summary_id=db_summary.id,
-                        source_language="en",
-                        target_language=target_lang,
-                        translated_text=trans_res["translation"],
-                        model_name=trans_res["model_name"],
-                    )
-                    summary_repo.create_translation(db_trans)
-                except TranslationError as te:
-                    logger.warning(f"Translation to {target_lang} failed: {te}")
-            if db_trans:
-                final_summary_text = db_trans.translated_text
-
-        response_payload = SummaryResponse(
-            summary_id=db_summary.id,
+        db_summary = Summary(
             article_id=db_article.id,
-            summary=final_summary_text,
-            length_profile=db_summary.length_profile,
-            compression_ratio=db_summary.compression_ratio or 0.0,
-            processing_time_ms=db_summary.processing_time_ms or 0.0,
-            model_name=db_summary.model_name,
-            language=target_lang,
-            original_title=db_article.title,
-            original_url=db_article.url,
+            summary_type=summ_res["pipeline_type"],
+            length_profile=req.length_profile,
+            text=summ_res["summary"],
+            compression_ratio=comp_ratio,
+            processing_time_ms=total_latency_ms,
+            model_name=summ_res["model_name"],
         )
+        summary_repo.create_summary(db_summary)
+        summary_id = db_summary.id
 
-        return jsonify(ApiResponse.ok(response_payload.model_dump()).model_dump()), 200
+    response_data = {
+        "summary_id": summary_id,
+        "article_id": db_article.id,
+        "summary": summ_res["summary"],
+        "length_profile": req.length_profile,
+        "compression_ratio": comp_ratio,
+        "processing_time_ms": total_latency_ms,
+        "model_name": summ_res["model_name"],
+        "language": effective_target_lang,
+        "source_language": source_lang,
+        "language_name": lang_info["language_name"],
+        "original_title": db_article.title,
+        "original_url": db_article.url,
+        "word_count": orig_words,
+        "summary_word_count": summary_words,
+        "reading_time": reading_time,
+        "topic": topic_info["category"],
+        "quality": summ_res.get("quality", {}),
+    }
+
+    return jsonify(ApiResponse.ok(response_data).model_dump()), 200
 
 @summarization_bp.route("/api/summaries/<summary_id>", methods=["GET"])
 def get_summary_by_id(summary_id: str):

@@ -1,4 +1,4 @@
-# 📰 AI-Powered Multilingual News Intelligence Platform (V2)
+# 📰 AI-Powered Multilingual News Intelligence Platform (V2.1)
 
 [![CI Pipeline](https://github.com/your-org/news-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/news-intelligence/actions)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
@@ -8,7 +8,7 @@
 
 An enterprise-grade, production-oriented AI News Intelligence platform that transforms long-form unstructured web journalism into structured, multi-dimensional intelligence briefings. 
 
-Originally created as a 2nd-year college news summarizer, this project has been re-architected into a modular monolith featuring **hierarchical Map-Reduce summarization**, **extractive MMR key-point discovery**, **full-document sentiment distribution**, **named entity recognition**, **multilingual translation (with dedicated Tamil models)**, **file-backed audio streaming**, and **relational persistence with anti-SSRF security**.
+Originally created as a 2nd-year college news summarizer, this project has been re-architected into a modular monolith featuring **hierarchical Map-Reduce summarization**, **production-grade multilingual NLP (Translate-Summarize-Translate)**, **extractive MMR key-point discovery**, **full-document sentiment distribution & framing signals**, **Unicode PDF report generation (Indic/Arabic/CJK TrueType)**, **extractive article Q&A**, **file-backed audio streaming**, and **relational persistence with anti-SSRF security**.
 
 ---
 
@@ -259,6 +259,9 @@ All API responses use a standard envelope:
 | `GET` | `/api/tts/audio/{file}` | Streams or downloads the generated MP3 file. | - |
 | `POST` | `/api/compare` | Compares two articles semantically with topic contrast. | `{"text_a": "...", "text_b": "..."}` |
 | `POST` | `/api/multi-source` | Multi-source consensus and synthesis across multiple articles. | `{"articles": [{"text": "..."}, {"text": "..."}]}` |
+| `POST` | `/api/article/ask` | Extractive question answering answering queries from article context. | `{"text": "...", "question": "..."}` |
+| `GET` | `/api/reports/{id}/pdf` | Generates & streams branded Unicode PDF report with font fallback. | `?lang=ta` |
+| `POST` | `/api/reports/pdf` | Direct on-the-fly PDF generation from summary payload. | `{"title": "...", "summary": "...", ...}` |
 | `GET` | `/api/history` | Lists recent persistent summary records. | `?limit=10` |
 | `GET` | `/api/health` | Liveness health check verifying database connectivity. | - |
 | `GET` | `/api/ready` | Readiness probe reporting model load status and hardware device. | - |

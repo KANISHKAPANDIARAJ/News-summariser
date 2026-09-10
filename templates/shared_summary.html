@@ -147,8 +147,11 @@
                     <button onclick="speakSummary()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
                         <i class="ph-bold ph-speaker-high"></i> Listen
                     </button>
+                    <a href="/api/reports/{{ sum_id }}/pdf" target="_blank" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-semibold transition shadow-sm">
+                        <i class="ph-bold ph-file-pdf"></i> Download PDF
+                    </a>
                     <button onclick="downloadText()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
-                        <i class="ph-bold ph-download-simple"></i> Download
+                        <i class="ph-bold ph-download-simple"></i> Text
                     </button>
                     <button onclick="copyShareUrl()" class="flex items-center gap-1.5 px-3.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl text-xs font-semibold transition">
                         <i class="ph-bold ph-copy"></i> Copy Link

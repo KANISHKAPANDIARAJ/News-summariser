@@ -16,11 +16,12 @@ class KeywordExtractor:
 
         try:
             # Extract unigrams and bigrams
+            # Use Unicode word character pattern to support Indic, Arabic, CJK and other scripts
             vectorizer = TfidfVectorizer(
-                stop_words="english",
+                stop_words=None,
                 ngram_range=(1, 2),
                 max_features=1000,
-                token_pattern=r"(?u)\b[a-zA-Z][a-zA-Z0-9_-]{2,}\b"
+                token_pattern=r"(?u)\b[^\W\d_]{2,}\b"
             )
             tfidf_matrix = vectorizer.fit_transform([text])
             feature_names = vectorizer.get_feature_names_out()
