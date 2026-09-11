@@ -1,240 +1,411 @@
-# 📰 AI-Powered Multilingual News Intelligence Platform (V2.1)
+#  AI-Powered Multilingual News Intelligence Platform
 
-[![CI Pipeline](https://github.com/your-org/news-intelligence/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/news-intelligence/actions)
-[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.6-ee4c2c.svg)](https://pytorch.org/)
-[![Transformers](https://img.shields.io/badge/HuggingFace-Transformers-yellow.svg)](https://huggingface.co/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+An enterprise-grade, production-oriented **AI News Intelligence Platform** that transforms long-form unstructured web journalism into structured, multi-dimensional intelligence briefings.
 
-An enterprise-grade, production-oriented AI News Intelligence platform that transforms long-form unstructured web journalism into structured, multi-dimensional intelligence briefings. 
-
-Originally created as a 2nd-year college news summarizer, this project has been re-architected into a modular monolith featuring **hierarchical Map-Reduce summarization**, **production-grade multilingual NLP (Translate-Summarize-Translate)**, **extractive MMR key-point discovery**, **full-document sentiment distribution & framing signals**, **Unicode PDF report generation (Indic/Arabic/CJK TrueType)**, **extractive article Q&A**, **file-backed audio streaming**, and **relational persistence with anti-SSRF security**.
+The system combines **hierarchical Map-Reduce summarization**, **multilingual NLP**, **extractive MMR key-point discovery**, **document-level sentiment analysis**, **named entity recognition**, **article comparison**, **translation**, **text-to-speech**, **extractive question answering**, and **Unicode PDF report generation**.
 
 ---
 
-## 📑 Table of Contents
-1. [Project Overview](#1-project-overview)
-2. [Problem Statement & V1 Bottlenecks](#2-problem-statement--v1-bottlenecks)
-3. [Key Features](#3-key-features)
-4. [Architecture Overview](#4-architecture-overview)
-5. [ML Pipeline](#5-ml-pipeline)
-6. [Long Document Strategy (Hierarchical Map-Reduce)](#6-long-document-strategy)
-7. [Model Selection & Rationale](#7-model-selection--rationale)
-8. [Database Schema](#8-database-schema)
-9. [REST API Documentation](#9-rest-api-documentation)
-10. [Local Quickstart Setup](#10-local-quickstart-setup)
-11. [Environment Variables](#11-environment-variables)
-12. [Docker Deployment](#12-docker-deployment)
-13. [Automated Testing Suite](#13-automated-testing-suite)
-14. [Evaluation Methodology](#14-evaluation-methodology)
-15. [Benchmark Results (V1 vs V2)](#15-benchmark-results-v1-vs-v2)
-16. [Limitations & Transparency](#16-limitations--transparency)
-17. [Security Controls](#17-security-controls)
-18. [Future Roadmap](#18-future-roadmap)
+## Key Features
+
+###  Multi-Strategy Article Extraction
+
+* Primary article extraction using `newspaper3k`.
+* Automatic fallback to semantic HTML extraction using `BeautifulSoup`.
+* Text normalization and boilerplate removal.
+* Duplicate-content reduction.
+* URL validation and anti-SSRF protection.
+* Article metadata preservation.
+
+###  Hierarchical Map-Reduce Summarization
+
+* Sentence-aware document chunking.
+* Maximum 750-token processing chunks.
+* Intermediate summaries generated during the Map phase.
+* Recursive reduction for long documents.
+* Final synthesis according to the requested summary profile:
+
+  * `short`
+  * `medium`
+  * `detailed`
+* Prevents important information from being lost because of simple token truncation.
+
+###  Extractive Key-Point Discovery
+
+* TF-IDF sentence vectorization.
+* Maximal Marginal Relevance (MMR).
+* Relevance and diversity balancing.
+* Configurable number of key points.
+* Returns salient sentences directly from the original article.
+
+###  Document Sentiment Analysis
+
+* Full-document sentiment processing.
+* Multi-segment analysis instead of analyzing only the beginning of an article.
+* Positive, neutral, and negative probability distributions.
+* Overall sentiment label and score.
+
+###  Named Entities & Keywords
+
+Extracts structured information including:
+
+* Person
+* Organization
+* Location
+* Date
+* Money
+* Percentage
+* Important keywords
+
+###  Multilingual Translation
+
+Supports translation of generated content into multiple languages.
+
+* English
+* Tamil
+* Hindi
+* French
+* German
+* Spanish
+* Other supported OPUS-MT languages
+
+Dedicated English-to-Tamil translation is provided using:
+
+`suriya7/English-to-Tamil`
 
 ---
 
-## 1. Project Overview
+## AI & NLP Capabilities
 
-The **AI News Intelligence Platform** addresses the challenge of information overload across modern digital media. Rather than merely condensing text, the platform extracts key factual claims, sentiment distributions, named entities, and cross-source comparisons while allowing audio playback and translation into regional languages like Tamil, Hindi, and French.
+### 1. Long-Document Summarization
 
----
+The platform uses:
 
-## 2. Problem Statement & V1 Bottlenecks
+* **DistilBART**
+* Sentence-aware chunking
+* Map-Reduce summarization
+* Recursive reduction
+* Configurable summary profiles
 
-In V1 (the original college implementation):
-- **1024 Token Truncation**: Articles longer than 3–4 paragraphs had their conclusions and tail sections completely discarded.
-- **Naive Sentence Extraction**: The system merely sliced the first 3 sentences of the article and labeled them "key sentences".
-- **Biased Sentiment Slicing**: Sentiment was computed on only the first 512 characters.
-- **Ephemeral Storage**: All records resided in an in-memory dictionary (`summaries_db = {}`), which was wiped upon server restart.
-- **Critical Security Risks**: SSL verification was globally disabled (`HF_HUB_DISABLE_SSL_VERIFICATION=1`), and scrapers lacked SSRF protection against internal subnets and AWS metadata (`169.254.169.254`).
+This allows the system to process long news articles without simply discarding content beyond a fixed token limit.
 
-V2 resolves every bottleneck through robust software engineering and applied NLP rigor.
+### 2. Sentiment Intelligence
 
----
+Uses:
 
-## 3. Key Features
+`distilbert-base-uncased-finetuned-sst-2-english`
 
-- **🌐 Multi-Strategy Article Extraction**: Primary extractor via `newspaper3k` with automatic fallback to semantic HTML scraping (`BeautifulSoup`).
-- **🛡️ Anti-SSRF Protection**: Strict IP/DNS resolver blocking private RFC1918 subnets, loopback, and cloud metadata addresses.
-- **📚 Hierarchical Map-Reduce Summarization**: Token-budget chunker that never cuts sentences, recursively synthesizing long articles.
-- **🎯 Extractive MMR Key Points**: Maximal Marginal Relevance algorithm ($\lambda=0.65$) balancing factual importance with diversity.
-- **📊 Document Sentiment Spectrum**: Multi-segment analysis yielding continuous positive, neutral, and negative probability distributions.
-- **🏷️ Structured NER & Keywords**: Identifies Person, Organization, Location, Date, Money, and % without exposing raw model tokens.
-- **🗣️ Multilingual Translation & Tamil**: Dedicated fine-tuned English-to-Tamil model (`suriya7/English-to-Tamil`) and MarianMT multilingual models.
-- **🔊 File-Backed TTS Streaming**: Browser-based speech synthesis alongside server-side MP3 generation with a 24-hour TTL cache.
-- **⚖️ Semantic Article Comparison**: Computes cosine similarity, shared topics, and unique reporting between two articles.
-- **💾 Relational Persistence**: Built on SQLAlchemy 2.0 supporting SQLite (local) and PostgreSQL (production).
-- **✨ Golden Emerald Workspace**: High-end responsive UI with ambient gradients, Phosphor icons, and live async controls.
+The complete article is divided into segments and analyzed to produce a more representative sentiment distribution.
 
----
+### 3. Extractive MMR Analysis
 
-## 4. Architecture Overview
+The MMR pipeline balances:
 
-The system is structured as a **clean modular monolith**:
+* Sentence relevance
+* Information diversity
+* Redundancy reduction
 
-```mermaid
-graph TD
-    Client[Web Browser / REST Client] --> WSGI[Gunicorn / Waitress WSGI]
-    WSGI --> App[Flask Application Factory]
+This produces concise factual key points while avoiding repetitive sentences.
 
-    subgraph API Layer
-        App --> ExtAPI[/api/articles/extract]
-        App --> SummAPI[/api/summarize]
-        App --> AnaAPI[/api/analyze]
-        App --> TransAPI[/api/translate]
-        App --> TTSAPI[/api/tts]
-        App --> CompAPI[/api/compare]
-        App --> HealthAPI[/api/health]
-    end
+### 4. Multilingual NLP
 
-    subgraph Service Layer
-        ExtAPI --> Extractor[Article Extractor + SSRF Guard]
-        SummAPI --> Summarizer[Hierarchical Map-Reduce Summarizer]
-        SummAPI --> Chunker[Sentence-Aware Chunker]
-        AnaAPI --> MMR[Keypoint Extractor MMR]
-        AnaAPI --> Sentiment[Sentiment Analyzer]
-        AnaAPI --> NER[Entity Extractor]
-        TransAPI --> Translator[Multilingual Translator]
-        TTSAPI --> TTSService[Audio TTS + Cache]
-    end
+The system uses:
 
-    subgraph ML Runtime
-        Summarizer --> ModelManager[Singleton ModelManager]
-        Sentiment --> ModelManager
-        Translator --> ModelManager
-        ModelManager --> Hardware[PyTorch CPU / CUDA Engine]
-    end
+* `suriya7/English-to-Tamil`
+* `Helsinki-NLP/opus-mt-en-{lang}`
 
-    subgraph Data & Storage
-        App --> Repos[Repository Layer]
-        Repos --> DB[(SQLite / PostgreSQL via SQLAlchemy 2.0)]
-        TTSService --> DiskCache[audio_cache/ MP3s]
-    end
-```
+This enables multilingual news intelligence and regional-language output.
+
+### 5. Article Comparison
+
+Two articles can be compared using semantic similarity to identify:
+
+* Shared topics
+* Similar reporting
+* Unique information
+* Differences between sources
+
+### 6. Extractive Article Q&A
+
+Users can ask questions about article content and retrieve answers from the provided article context.
+
+### 7. Text-to-Speech
+
+The platform provides:
+
+* Browser-based speech support.
+* Server-side MP3 generation.
+* File-backed audio storage.
+* 24-hour audio cache lifecycle.
+* Streaming endpoints for generated audio.
 
 ---
 
-## 5. ML Pipeline
+## Web Interface
+
+The application provides a responsive **Golden Emerald** workspace with:
+
+* Article URL input.
+* News article extraction.
+* AI-generated summaries.
+* Summary length selection.
+* Multilingual translation.
+* Sentiment visualization.
+* Key-point display.
+* Named entity information.
+* Keyword extraction.
+* Article comparison.
+* Text-to-speech playback.
+* Article question answering.
+* PDF report generation.
+* Summary history.
+* Async processing controls.
+
+---
+
+## Architecture
+
+The system follows a **modular monolith architecture** built around Flask, service-layer separation, model management, repositories, and relational persistence.
 
 ```text
-Target Article (URL or Text)
-    ↓
-Anti-SSRF Validation & Extraction
-    ↓
-Text Normalization (NFKC Unicode, Boilerplate & Deduplication)
-    ↓
-Sentence-Aware Chunker (Max 750 tokens, 1-sentence overlap)
-    ↓
-┌───────────────────────────────────────┬───────────────────────────────────────┐
-│         Abstractive Branch            │           Extractive Branch           │
-├───────────────────────────────────────┼───────────────────────────────────────┤
-│ Map: Summarize chunks with DistilBART │ Sentences Vectorized via TF-IDF       │
-│ Reduce: Synthesize intermediate summaries│ MMR Ranking (Relevance vs Diversity) │
-│ Final Synthesis: Configurable Length  │ Top N Salient Verbatim Key Points     │
-└───────────────────────────────────────┴───────────────────────────────────────┘
-    ↓                                       ↓
-DistilBERT Sentiment Aggregation        NER & Keyword Saliency
-    ↓                                       ↓
-Multilingual Translation (MarianMT / suriya7-Tamil)
-    ↓
-Audio File Synthesis (gTTS MP3 Streaming)
-    ↓
-Persisted to Relational Database & Returned via REST API
+                         ┌──────────────────────┐
+                         │      Web Browser      │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │   Flask Application  │
+                         │      Factory         │
+                         └──────────┬───────────┘
+                                    │
+                 ┌──────────────────┼──────────────────┐
+                 │                  │                  │
+                 ▼                  ▼                  ▼
+        Article Extraction      Summarization      Analysis
+                 │                  │                  │
+                 ▼                  ▼          ┌───────┼────────┐
+          SSRF Protection       Map-Reduce      │       │        │
+                 │              Chunking        ▼       ▼        ▼
+                 ▼                  │         MMR   Sentiment   NER
+          Article Content          ▼
+                              Model Manager
+                                    │
+                         ┌──────────┼──────────┐
+                         │          │          │
+                         ▼          ▼          ▼
+                      PyTorch    CPU/CUDA   Transformers
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ Translation / TTS /  │
+                         │ Comparison / Reports │
+                         └──────────┬───────────┘
+                                    │
+                                    ▼
+                         ┌──────────────────────┐
+                         │ SQLite / PostgreSQL  │
+                         │    Persistence       │
+                         └──────────────────────┘
 ```
 
 ---
 
-## 6. Long Document Strategy
+## ML Processing Pipeline
 
-When processing an article exceeding 750 tokens:
-1. **Sentence Boundary Preservation**: The chunker segments along grammatical sentence terminals (`.`, `!`, `?`), eliminating fragmented sentences.
-2. **Map Phase**: Each chunk is summarized into an intermediate representation.
-3. **Reduce Phase**: Intermediate summaries are combined. If the combined text exceeds the chunk budget, secondary reduction occurs.
-4. **Final Synthesis**: The model synthesizes the combined summaries into a unified briefing according to the requested profile (`short`, `medium`, `detailed`).
-
----
-
-## 7. Model Selection & Rationale
-
-| Task | Selected Model | Parameter Count | Primary Rationale |
-|---|---|---|---|
-| **Summarization** | `sshleifer/distilbart-cnn-12-6` | ~306M | Delivers 95% of BART-large abstractive quality at half the memory footprint; ideal for CPU and horizontal scaling. |
-| **Sentiment** | `distilbert-base-uncased-finetuned-sst-2-english` | ~66M | Fast transformer classification across sampled segments throughout the full document. |
-| **Tamil Translation** | `suriya7/English-to-Tamil` | ~300M | Specialized fine-tuning for English to Tamil script translation. |
-| **Multilingual** | `Helsinki-NLP/opus-mt-en-{lang}` | ~77M | High-quality, compact OPUS-MT Seq2Seq models for Hindi, French, German, Spanish, etc. |
-
----
-
-## 8. Database Schema
-
-```mermaid
-erDiagram
-    articles ||--o{ summaries : "has"
-    articles ||--o| analysis_results : "has"
-    summaries ||--o{ translations : "has"
-    articles ||--o{ article_comparisons : "compares"
-
-    articles {
-        string id PK
-        string url
-        string content_hash UK
-        string title
-        text raw_text
-        text cleaned_text
-        string language
-        int word_count
-        datetime created_at
-    }
-
-    summaries {
-        string id PK
-        string article_id FK
-        string summary_type
-        string length_profile
-        text text
-        float compression_ratio
-        float processing_time_ms
-        string model_name
-        datetime created_at
-    }
-
-    analysis_results {
-        string id PK
-        string article_id FK
-        string sentiment_label
-        float sentiment_score
-        json sentiment_distribution
-        json key_points
-        json keywords
-        json entities
-    }
-
-    translations {
-        string id PK
-        string summary_id FK
-        string source_language
-        string target_language
-        text translated_text
-    }
+```text
+Article URL or Text
+        ↓
+Anti-SSRF Validation
+        ↓
+Article Extraction
+        ↓
+Text Normalization
+(NFKC Unicode + Boilerplate Removal)
+        ↓
+Sentence-Aware Chunking
+(Max 750 Tokens)
+        ↓
+┌───────────────────────────┬───────────────────────────┐
+│   Abstractive Branch      │    Extractive Branch      │
+├───────────────────────────┼───────────────────────────┤
+│ DistilBART                │ TF-IDF                    │
+│ Map Summarization         │ MMR Ranking               │
+│ Reduce Summarization     │ Diverse Key Points        │
+│ Final Synthesis           │                           │
+└───────────────────────────┴───────────────────────────┘
+        ↓
+┌─────────────────────────────────────────┐
+│ Sentiment + NER + Keywords + Analysis   │
+└────────────────────┬────────────────────┘
+                     ↓
+          Multilingual Translation
+                     ↓
+              TTS Audio Generation
+                     ↓
+           PDF Report Generation
+                     ↓
+        Database Persistence + REST API
 ```
 
 ---
 
-## 9. REST API Documentation
+## Long Document Processing
 
-All API responses use a standard envelope:
+Articles exceeding the processing budget are handled using a hierarchical Map-Reduce strategy.
 
-**Success Response (HTTP 200/201):**
+```text
+Long Article
+     ↓
+Sentence Boundary Detection
+     ↓
+750-Token Chunks
+     ↓
+Map Phase
+     ↓
+Intermediate Summaries
+     ↓
+Reduce Phase
+     ↓
+Recursive Reduction if Required
+     ↓
+Final Synthesis
+     ↓
+Short / Medium / Detailed Summary
+```
+
+The chunker preserves complete sentences instead of cutting text at arbitrary token boundaries.
+
+This prevents the system from losing conclusions, important facts, and information appearing later in long articles.
+
+---
+
+## Model Selection
+
+| Task                         | Model                                             | Purpose                        |
+| ---------------------------- | ------------------------------------------------- | ------------------------------ |
+| **Summarization**            | `sshleifer/distilbart-cnn-12-6`                   | Abstractive news summarization |
+| **Sentiment**                | `distilbert-base-uncased-finetuned-sst-2-english` | Document sentiment analysis    |
+| **Tamil Translation**        | `suriya7/English-to-Tamil`                        | English → Tamil translation    |
+| **Multilingual Translation** | `Helsinki-NLP/opus-mt-en-{lang}`                  | Multilingual translation       |
+| **Sentence Ranking**         | TF-IDF + MMR                                      | Extractive key-point discovery |
+| **ML Runtime**               | PyTorch                                           | Model execution                |
+
+---
+
+## Database
+
+The application uses **SQLAlchemy 2.0** with support for:
+
+* SQLite for local development.
+* PostgreSQL for production deployment.
+
+### Main Entities
+
+```text
+Articles
+   │
+   ├── Summaries
+   │      │
+   │      └── Translations
+   │
+   ├── Analysis Results
+   │      ├── Sentiment
+   │      ├── Key Points
+   │      ├── Keywords
+   │      └── Entities
+   │
+   └── Article Comparisons
+```
+
+### Article Data
+
+```text
+id
+url
+content_hash
+title
+raw_text
+cleaned_text
+language
+word_count
+created_at
+```
+
+### Summary Data
+
+```text
+id
+article_id
+summary_type
+length_profile
+text
+compression_ratio
+processing_time_ms
+model_name
+created_at
+```
+
+### Analysis Data
+
+```text
+id
+article_id
+sentiment_label
+sentiment_score
+sentiment_distribution
+key_points
+keywords
+entities
+```
+
+### Translation Data
+
+```text
+id
+summary_id
+source_language
+target_language
+translated_text
+```
+
+---
+
+##  API Endpoints
+
+| Method | Endpoint                | Description                                        |
+| ------ | ----------------------- | -------------------------------------------------- |
+| `POST` | `/api/articles/extract` | Extracts article content and metadata from a URL   |
+| `POST` | `/api/summarize`        | Generates an AI summary from URL or text           |
+| `GET`  | `/api/summaries/{id}`   | Retrieves a stored summary and translations        |
+| `POST` | `/api/analyze`          | Performs sentiment, MMR, keyword, and NER analysis |
+| `POST` | `/api/translate`        | Translates supplied text                           |
+| `POST` | `/api/tts`              | Generates MP3 audio                                |
+| `GET`  | `/api/tts/audio/{file}` | Streams generated audio                            |
+| `POST` | `/api/compare`          | Compares two articles semantically                 |
+| `POST` | `/api/multi-source`     | Performs multi-source consensus and synthesis      |
+| `POST` | `/api/article/ask`      | Performs extractive article question answering     |
+| `GET`  | `/api/reports/{id}/pdf` | Generates a Unicode PDF report                     |
+| `POST` | `/api/reports/pdf`      | Generates a PDF from a summary payload             |
+| `GET`  | `/api/history`          | Returns recent summary history                     |
+| `GET`  | `/api/health`           | Database and application health check              |
+| `GET`  | `/api/ready`            | Model and hardware readiness check                 |
+
+---
+
+## API Response Format
+
+### Success Response
+
 ```json
 {
   "success": true,
-  "data": { ... },
+  "data": {},
   "error": null
 }
 ```
 
-**Failure Response (HTTP 400/404/422/500):**
+### Failure Response
+
 ```json
 {
   "success": false,
@@ -246,152 +417,412 @@ All API responses use a standard envelope:
 }
 ```
 
-### Key Endpoints
+---
 
-| Method | Endpoint | Description | Sample Payload |
-|---|---|---|---|
-| `POST` | `/api/articles/extract` | Scrapes text and metadata from URL with anti-SSRF checks. | `{"url": "https://example.com/news"}` |
-| `POST` | `/api/summarize` | Summarizes URL or text with configurable length and target language. | `{"url": "...", "length_profile": "medium", "language": "ta"}` |
-| `GET` | `/api/summaries/{id}` | Retrieves existing summary and translations by ID. | - |
-| `POST` | `/api/analyze` | Generates sentiment distribution, MMR key points, keywords, and NER. | `{"text": "...", "num_key_points": 5}` |
-| `POST` | `/api/translate` | Translates text to supported target language. | `{"text": "...", "target_language": "ta"}` |
-| `POST` | `/api/tts` | Generates file-backed MP3 audio and returns streaming URL. | `{"text": "...", "language": "en"}` |
-| `GET` | `/api/tts/audio/{file}` | Streams or downloads the generated MP3 file. | - |
-| `POST` | `/api/compare` | Compares two articles semantically with topic contrast. | `{"text_a": "...", "text_b": "..."}` |
-| `POST` | `/api/multi-source` | Multi-source consensus and synthesis across multiple articles. | `{"articles": [{"text": "..."}, {"text": "..."}]}` |
-| `POST` | `/api/article/ask` | Extractive question answering answering queries from article context. | `{"text": "...", "question": "..."}` |
-| `GET` | `/api/reports/{id}/pdf` | Generates & streams branded Unicode PDF report with font fallback. | `?lang=ta` |
-| `POST` | `/api/reports/pdf` | Direct on-the-fly PDF generation from summary payload. | `{"title": "...", "summary": "...", ...}` |
-| `GET` | `/api/history` | Lists recent persistent summary records. | `?limit=10` |
-| `GET` | `/api/health` | Liveness health check verifying database connectivity. | - |
-| `GET` | `/api/ready` | Readiness probe reporting model load status and hardware device. | - |
+##  Supported Languages
+
+The platform supports multilingual news processing and translation through dedicated and OPUS-MT models.
+
+Examples include:
+
+* 🇬🇧 English
+* 🇮🇳 Tamil
+* 🇮🇳 Hindi
+* 🇫🇷 French
+* 🇩🇪 German
+* 🇪🇸 Spanish
+
+Tamil translation uses:
+
+```text
+suriya7/English-to-Tamil
+```
+
+Other supported languages use the corresponding:
+
+```text
+Helsinki-NLP/opus-mt-en-{lang}
+```
+
+models.
 
 ---
 
-## 10. Local Quickstart Setup
+##  PDF Reports
 
-### Prerequisites
-- Python 3.10+ (tested on Python 3.12)
-- Git
+The platform can generate branded PDF reports containing:
 
-### Installation
+* Article title
+* Summary
+* Key points
+* Sentiment information
+* Translated content
+* Article metadata
+* Unicode text
+
+Unicode font fallback enables support for scripts including:
+
+* Tamil
+* Arabic
+* CJK languages
+
+---
+
+##  Text-to-Speech
+
+Generated summaries can be converted into MP3 audio.
+
+```text
+Summary Text
+     ↓
+TTS Service
+     ↓
+MP3 Generation
+     ↓
+File Cache
+     ↓
+Streaming Endpoint
+     ↓
+Browser Playback
+```
+
+Generated audio is stored using a file-backed cache with a 24-hour TTL.
+
+---
+
+##  Security
+
+### Anti-SSRF Protection
+
+External article URLs are validated before requests are made.
+
+Blocked network ranges include:
+
+```text
+10.0.0.0/8
+172.16.0.0/12
+192.168.0.0/16
+127.0.0.0/8
+169.254.169.254
+```
+
+This prevents requests to private networks, loopback interfaces, and cloud metadata services.
+
+### Input Sanitization
+
+The platform uses:
+
+* NFKC Unicode normalization.
+* HTML entity stripping.
+* Sanitized article content.
+
+### HTTP Security Headers
+
+The application provides security headers including:
+
+```text
+X-Frame-Options: DENY
+X-Content-Type-Options: nosniff
+X-XSS-Protection: 1; mode=block
+```
+
+---
+
+##  Prerequisites
+
+### Local Development
+
+* Python 3.10+
+* Python 3.12 recommended
+* Git
+* Sufficient storage for Hugging Face models
+* CPU or CUDA-compatible environment
+
+### Docker Deployment
+
+* Docker Desktop
+* Docker Compose
+
+---
+
+##  Local Installation
+
+### 1. Clone the Repository
+
 ```bash
-# Clone the repository
 git clone https://github.com/your-org/news-intelligence.git
 cd news-intelligence
+```
 
-# Create and activate virtual environment
+### 2. Create a Virtual Environment
+
+**Windows:**
+
+```powershell
 python -m venv venv
-# On Windows:
 venv\Scripts\activate
-# On Linux/macOS:
+```
+
+**Linux / macOS:**
+
+```bash
+python3 -m venv venv
 source venv/bin/activate
+```
 
-# Install dependencies
+### 3. Install Dependencies
+
+```bash
 pip install -r requirements.txt
+```
 
-# Configure environment
-cp .env.example .env
+### 4. Configure Environment
 
-# Run development server
+Create a `.env` file if required by your deployment configuration.
+
+### 5. Start the Application
+
+```bash
 python app.py
 ```
-Visit `http://localhost:5000` in your web browser.
+
+Open:
+
+```text
+http://localhost:5000
+```
 
 ---
 
-## 11. Environment Variables
+##  Environment Variables
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `FLASK_ENV` | `development` | Application environment (`development` / `production`). |
-| `DATABASE_URL` | `sqlite:///news_intelligence.db` | Database connection URI (SQLite or PostgreSQL). |
-| `REDIS_URL` | `redis://localhost:6379/0` | Optional Redis URI for distributed caching. |
-| `MODEL_DEVICE` | `auto` | Execution device (`auto`, `cpu`, `cuda`). |
-| `SUMMARIZATION_MODEL` | `sshleifer/distilbart-cnn-12-6` | Hugging Face summarization model identifier. |
-| `SENTIMENT_MODEL` | `distilbert-base-uncased-finetuned-sst-2-english` | Hugging Face sentiment model identifier. |
-| `DEFAULT_TRANSLATION_MODEL_TAMIL` | `suriya7/English-to-Tamil` | Fine-tuned English to Tamil model. |
-| `REQUEST_TIMEOUT_SECONDS` | `15` | Max timeout for external HTTP scraping requests. |
+| Variable                          | Default                                           | Purpose                    |
+| --------------------------------- | ------------------------------------------------- | -------------------------- |
+| `FLASK_ENV`                       | `development`                                     | Application environment    |
+| `DATABASE_URL`                    | `sqlite:///news_intelligence.db`                  | Database connection        |
+| `REDIS_URL`                       | `redis://localhost:6379/0`                        | Optional Redis connection  |
+| `MODEL_DEVICE`                    | `auto`                                            | CPU / CUDA model execution |
+| `SUMMARIZATION_MODEL`             | `sshleifer/distilbart-cnn-12-6`                   | Summarization model        |
+| `SENTIMENT_MODEL`                 | `distilbert-base-uncased-finetuned-sst-2-english` | Sentiment model            |
+| `DEFAULT_TRANSLATION_MODEL_TAMIL` | `suriya7/English-to-Tamil`                        | Tamil translation model    |
+| `REQUEST_TIMEOUT_SECONDS`         | `15`                                              | External request timeout   |
 
 ---
 
-## 12. Docker Deployment
+##  Running with Docker
 
-Launch the complete production stack (App, PostgreSQL 16, Redis 7) with a single command:
+Build and start the complete application stack:
 
 ```bash
 docker compose up --build
 ```
 
-The application will be available at `http://localhost:5000` with automated health checks enabled.
+Run in detached mode:
+
+```bash
+docker compose up -d --build
+```
+
+Check containers:
+
+```bash
+docker compose ps
+```
+
+View logs:
+
+```bash
+docker compose logs -f
+```
+
+Stop the application:
+
+```bash
+docker compose down
+```
+
+The application will be available at:
+
+```text
+http://localhost:5000
+```
+
+The Docker deployment includes:
+
+```text
+Flask Application
+       │
+       ├── PostgreSQL 16
+       │
+       └── Redis 7
+```
 
 ---
 
-## 13. Automated Testing Suite
+##  Automated Testing
 
-The test suite contains 29 comprehensive automated tests across unit logic, API contracts, failure scenarios, and security protections:
+The project includes an automated testing suite covering:
+
+* Unit logic
+* API contracts
+* Failure scenarios
+* Security protections
+* Article extraction
+* Application behavior
+
+Run the tests using:
 
 ```bash
 pytest tests/ -v
 ```
 
-Output:
+Current benchmark from the project:
+
 ```text
-======================= 29 passed, 12 warnings in 1.48s =======================
+29 passed, 12 warnings in 1.48s
 ```
 
 ---
 
-## 14. Evaluation Methodology
+##  Evaluation
 
-A dedicated evaluation suite (`evaluation/benchmark_runner.py`) assesses summarization quality using real news articles:
-- **ROUGE-1**: Unigram overlap assessing vocabulary recall.
-- **ROUGE-2**: Bi-gram overlap assessing preservation of specific factual clauses.
-- **ROUGE-L**: Longest Common Subsequence assessing grammatical sentence coherence.
-- **Compression Ratio**: Ratio of condensed summary length to source article length.
-- **Latency**: End-to-end execution duration.
+The summarization pipeline is evaluated using real news articles.
 
----
+### Evaluation Metrics
 
-## 15. Benchmark Results (V1 vs V2)
-
-*Measured on standard CPU runtime using `evaluation/benchmark_runner.py`:*
-
-| Metric | V1 (Baseline Truncation) | V2 (Hierarchical Map-Reduce) | Delta / Improvement |
-|---|---|---|---|
-| **ROUGE-1 (F1)** | 0.2928 | **0.3649** | **+24.6%** |
-| **ROUGE-2 (F1)** | 0.0396 | **0.1198** | **+202.2%** |
-| **ROUGE-L (F1)** | 0.1971 | **0.2570** | **+30.4%** |
-| **Avg Latency (s)** | 9.96s | 10.60s | +6.5% |
-| **Compression Ratio** | 63.9% | 60.0% | -3.9% |
-
-*Key Takeaway: The +202% surge in ROUGE-2 confirms that the hierarchical Map-Reduce pipeline preserves critical factual information from later paragraphs that V1 discarded.*
+| Metric                | Purpose                                                 |
+| --------------------- | ------------------------------------------------------- |
+| **ROUGE-1**           | Measures unigram overlap                                |
+| **ROUGE-2**           | Measures bigram overlap and factual phrase preservation |
+| **ROUGE-L**           | Measures longest common subsequence                     |
+| **Compression Ratio** | Measures summary size relative to source                |
+| **Latency**           | Measures end-to-end processing time                     |
 
 ---
 
-## 16. Limitations & Transparency
+##  Benchmark Results
 
-- **Linguistic Polarity vs Factual Truth**: Sentiment analysis measures emotional tone, not journalistic truthfulness or political bias.
-- **Model Hallucination Potential**: Abstractive models can occasionally synthesize incorrect dates or quantities. Extractive MMR key points are provided alongside summaries as factual ground truth.
-- **Model Size vs Latency**: Translation models require on-demand downloads on first use if not pre-cached.
+### V1 vs V2
 
----
+| Metric                |     V1 |         V2 | Improvement |
+| --------------------- | -----: | ---------: | ----------: |
+| **ROUGE-1 F1**        | 0.2928 | **0.3649** |  **+24.6%** |
+| **ROUGE-2 F1**        | 0.0396 | **0.1198** | **+202.2%** |
+| **ROUGE-L F1**        | 0.1971 | **0.2570** |  **+30.4%** |
+| **Average Latency**   |  9.96s |     10.60s |       +6.5% |
+| **Compression Ratio** |  63.9% |      60.0% |       -3.9% |
 
-## 17. Security Controls
+### Key Result
 
-- **SSRF Prevention**: Strict DNS and IP subnet validation prevents requests to internal subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `127.0.0.0/8`, `169.254.169.254`).
-- **Input Sanitization**: NFKC Unicode normalization and HTML entity stripping to prevent stored XSS attacks.
-- **HTTP Security Headers**: `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, and `X-XSS-Protection: 1; mode=block` set by middleware.
-
----
-
-## 18. Future Roadmap
-
-- [ ] ONNX Runtime & INT8 quantization for sub-second CPU inference.
-- [ ] Celery + Redis distributed workers for batch document processing.
-- [ ] Knowledge graph entity linking against Wikidata.
+The hierarchical Map-Reduce approach produced a **202.2% improvement in ROUGE-2 F1**, demonstrating improved preservation of important factual information from later portions of long articles compared with the original truncation-based approach.
 
 ---
 
-## 📄 License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+##  Example Use Cases
+
+After providing an article URL or text, users can perform tasks such as:
+
+* Generate a short news summary.
+* Generate a detailed news briefing.
+* Extract the most important factual points.
+* Analyze article sentiment.
+* Identify people, organizations, and locations.
+* Translate a summary into Tamil.
+* Translate content into Hindi or French.
+* Compare two news articles.
+* Ask questions about an article.
+* Generate a PDF intelligence report.
+* Listen to the generated summary using text-to-speech.
+* Compare reporting across multiple news sources.
+
+---
+
+##  Limitations
+
+* Sentiment analysis measures linguistic/emotional tone and does not determine factual truth.
+* Sentiment scores should not be interpreted as definitive political-bias measurements.
+* Abstractive summarization can occasionally introduce incorrect dates, quantities, or details.
+* Extractive MMR key points are provided to retain direct factual sentences from the source.
+* Translation models may require model downloads during their first execution.
+* CPU inference can be slower than GPU inference.
+* Model quality depends on the quality and structure of the extracted article content.
+
+---
+
+##  Future Roadmap
+
+*  ONNX Runtime optimization.
+*  INT8 quantization for faster CPU inference.
+*  Celery + Redis distributed workers.
+*  Batch news processing.
+*  Knowledge graph entity linking.
+*  Wikidata integration.
+*  Further multilingual model support.
+*  Advanced cross-source news intelligence.
+
+---
+
+##  Technology Stack
+
+| Component                | Technology                        |
+| ------------------------ | --------------------------------- |
+| **Backend**              | Flask                             |
+| **ORM**                  | SQLAlchemy 2.0                    |
+| **Database**             | SQLite / PostgreSQL               |
+| **Summarization**        | DistilBART                        |
+| **Sentiment Analysis**   | DistilBERT                        |
+| **Translation**          | MarianMT / English-to-Tamil       |
+| **Key-Point Extraction** | TF-IDF + MMR                      |
+| **Article Extraction**   | newspaper3k                       |
+| **Fallback Extraction**  | BeautifulSoup                     |
+| **ML Framework**         | PyTorch                           |
+| **NLP Framework**        | Hugging Face Transformers         |
+| **Text-to-Speech**       | gTTS                              |
+| **PDF Generation**       | Unicode-compatible PDF generation |
+| **Caching**              | Redis / File-backed audio cache   |
+| **Testing**              | Pytest                            |
+| **Containerization**     | Docker + Docker Compose           |
+
+---
+
+##  Project Status
+
+The application currently supports:
+
+*  News article extraction
+*  Semantic HTML fallback extraction
+*  Anti-SSRF URL protection
+*  Long-document processing
+*  Hierarchical Map-Reduce summarization
+*  Sentence-aware chunking
+*  Extractive MMR key points
+*  Full-document sentiment analysis
+*  Named entity extraction
+*  Keyword extraction
+*  Tamil translation
+*  Multilingual translation
+*  Article comparison
+*  Multi-source synthesis
+*  Extractive article Q&A
+*  Text-to-speech
+*  File-backed MP3 streaming
+*  Unicode PDF reports
+*  Relational database persistence
+*  REST API
+*  Automated testing
+*  Docker deployment
+*  Health and readiness endpoints
+
+---
+
+##  Author
+
+**Kanishka Pandiaraj**
+
+---
+
+##  License
+
+This project is licensed under the **MIT License**.
+
+See the `LICENSE` file for details.
