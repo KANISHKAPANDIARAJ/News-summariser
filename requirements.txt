@@ -12,11 +12,6 @@ rouge-score>=0.1.2
 requests>=2.31.0
 python-dotenv>=1.0.0
 pytest>=8.0.0
-reportlab>=4.1.0
-langdetect>=1.0.9
-sentencepiece>=0.2.0
-arabic-reshaper>=3.0.0
-python-bidi>=0.6.0
-sacremoses>=0.1.0
 gunicorn>=21.0.0; sys_platform != 'win32'
 waitress>=3.0.0; sys_platform == 'win32'
+lxml_html_cleaner>=0.1.0
