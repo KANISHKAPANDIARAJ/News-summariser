@@ -1,11 +1,11 @@
 """Health check and readiness endpoints."""
 
+from __future__ import annotations
 import time
 
 from flask import Blueprint, jsonify
 
 from app.api.schemas.common import ApiResponse
-from app.constants import ErrorCodes
 from app.db import engine
 from app.ml.model_manager import get_model_manager
 

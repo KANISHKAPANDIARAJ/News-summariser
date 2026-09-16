@@ -1,5 +1,7 @@
 """API schemas package export."""
 
+from __future__ import annotations
+
 from app.api.schemas.analysis import (
     AnalyzeRequest,
     CompareRequest,

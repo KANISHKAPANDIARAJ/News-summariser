@@ -1,9 +1,13 @@
 """Database session management and schema initialization."""
 
+from __future__ import annotations
+
 from contextlib import contextmanager
-from typing import Generator
+from collections.abc import Generator
+
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
+from sqlalchemy.orm import Session, sessionmaker
+
 from app.config import get_config
 from app.models.base import Base
 # Import all models to ensure registered on metadata
@@ -34,7 +38,7 @@ def get_db_session() -> Generator[Session, None, None]:
     try:
         yield session
         session.commit()
-    except Exception:
+    except Exception:  # noqa: BLE001
         session.rollback()
         raise
     finally:

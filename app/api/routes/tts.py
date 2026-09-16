@@ -1,13 +1,15 @@
 """Text-to-Speech REST API routes."""
 
+from __future__ import annotations
 from pathlib import Path
 
 from flask import Blueprint, jsonify, request, send_file
 from pydantic import ValidationError
+
 from app.api.schemas.analysis import TTSRequest
 from app.api.schemas.common import ApiResponse
-from app.services.tts_service import TTSService
 from app.constants import ErrorCodes
+from app.services.tts_service import TTSService
 from app.utils.logger import logger
 
 tts_bp = Blueprint("tts_api", __name__)

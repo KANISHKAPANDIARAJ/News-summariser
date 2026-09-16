@@ -1,8 +1,10 @@
 """Semantic comparison and multi-source analysis routes."""
 
-from flask import Blueprint, jsonify, request
+from __future__ import annotations
 
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
+
 from app.api.schemas.analysis import CompareRequest, MultiSourceRequest
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes

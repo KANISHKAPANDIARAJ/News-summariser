@@ -1,8 +1,10 @@
 """Central Model Manager providing thread-safe lazy loading and device management."""
 
+from __future__ import annotations
 import threading
+
 import torch
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Any
 from transformers import (
     AutoModelForSeq2SeqLM,
     AutoTokenizer,
@@ -11,8 +13,8 @@ from transformers import (
     pipeline,
 )
 from app.config import get_config
-from app.utils.logger import logger
 from app.constants import SUPPORTED_LANGUAGES
+from app.utils.logger import logger
 
 class ModelManager:
     _instance: Optional["ModelManager"] = None
@@ -21,7 +23,7 @@ class ModelManager:
     def __new__(cls):
         with cls._lock:
             if cls._instance is None:
-                cls._instance = super(ModelManager, cls).__new__(cls)
+                cls._instance = super().__new__(cls)
                 cls._instance._init_manager()
             return cls._instance
 
@@ -31,7 +33,7 @@ class ModelManager:
         self._summarizer_model: Optional[BartForConditionalGeneration] = None
         self._summarizer_tokenizer: Optional[BartTokenizer] = None
         self._sentiment_pipeline = None
-        self._translation_models: Dict[str, Dict[str, Any]] = {}
+        self._translation_models: dict[str, dict[str, Any]] = {}
         self._model_lock = threading.Lock()
         logger.info(f"ModelManager initialized. Target device: {self.device}")
 
@@ -44,7 +46,7 @@ class ModelManager:
         else:
             return "cuda" if torch.cuda.is_available() else "cpu"
 
-    def get_summarizer(self) -> Tuple[BartForConditionalGeneration, BartTokenizer]:
+    def get_summarizer(self) -> tuple[BartForConditionalGeneration, BartTokenizer]:
         """Lazy-loads and returns the summarization model and tokenizer."""
         with self._model_lock:
             if self._summarizer_model is None or self._summarizer_tokenizer is None:
@@ -73,7 +75,7 @@ class ModelManager:
                 logger.info(f"Sentiment pipeline {model_name} loaded successfully.")
             return self._sentiment_pipeline
 
-    def get_translation_model(self, lang_code: str) -> Tuple[Optional[Any], Optional[Any]]:
+    def get_translation_model(self, lang_code: str) -> tuple[Optional[Any], Optional[Any]]:
         """Lazy-loads and returns the translation model and tokenizer for a specific language code."""
         if lang_code == "en":
             return None, None

@@ -1,7 +1,10 @@
 """Report generation endpoints for PDF download."""
 
+from __future__ import annotations
 import io
+
 from flask import Blueprint, jsonify, request, send_file
+
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes
 from app.db import get_db_session

@@ -1,6 +1,9 @@
 """Article Q&A REST API route."""
 
+from __future__ import annotations
+
 from flask import Blueprint, jsonify, request
+
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes
 from app.services.qa_service import ArticleQAService

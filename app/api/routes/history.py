@@ -1,6 +1,9 @@
 """History management REST API routes."""
 
+from __future__ import annotations
+
 from flask import Blueprint, jsonify, request
+
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes
 from app.db import get_db_session

@@ -1,5 +1,7 @@
 """Pydantic schemas for Analysis, Translation, and TTS."""
 
+from __future__ import annotations
+
 from pydantic import BaseModel, Field
 
 class AnalyzeRequest(BaseModel):

@@ -1,9 +1,11 @@
 """Intelligence Analysis REST API route with multilingual support and framing signals."""
 
+from __future__ import annotations
 import re
-from flask import Blueprint, jsonify, request
 
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
+
 from app.api.schemas.analysis import AnalyzeRequest
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes
@@ -33,7 +35,7 @@ def compute_framing_signals(text: str) -> dict[str, str]:
     sensational_count = sum(len(re.findall(rf"\b{w}\b", text_lower)) for w in sensational_words)
     
     # Attribution signals (quotes, according to, said, reported)
-    attribution_words = ["said", "stated", "according to", "reported", "spokesperson", "officials", "confirmed", "announced", "கூறினார்", "தெரிவித்தார்"]
+    attribution_words = ["said", "stated", "according to", "reported", "spokesperson", "officials", "confirmed", "announced", "கூறினார்", "தெரிவிட்டார்"]
     attr_count = sum(len(re.findall(rf"\b{w}\b", text_lower)) for w in attribution_words)
     
     words_total = max(1, len(text.split()))

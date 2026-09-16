@@ -1,8 +1,10 @@
 """Article extraction route."""
 
-from flask import Blueprint, jsonify, request
+from __future__ import annotations
 
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
+
 from app.api.schemas.article import ArticleExtractRequest
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes

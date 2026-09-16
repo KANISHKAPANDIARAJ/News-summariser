@@ -1,7 +1,10 @@
 """Translation REST API route with quality validation and fallback routing."""
 
+from __future__ import annotations
+
 from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
+
 from app.api.schemas.analysis import TranslateRequest
 from app.api.schemas.common import ApiResponse
 from app.constants import SUPPORTED_LANGUAGES, ErrorCodes

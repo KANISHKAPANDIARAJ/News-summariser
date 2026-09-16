@@ -1,6 +1,9 @@
 """Processing Job status REST API route."""
 
+from __future__ import annotations
+
 from flask import Blueprint, jsonify
+
 from app.api.schemas.common import ApiResponse
 from app.constants import ErrorCodes
 from app.db import get_db_session

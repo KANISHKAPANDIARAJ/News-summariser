@@ -1,14 +1,18 @@
 """Summarization REST API routes with multilingual support and partial success handling."""
 
+from __future__ import annotations
 import time
+
 from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
+
 from app.api.schemas.summary import SummarizeRequest
 from app.api.schemas.common import ApiResponse
-from app.services.article_extractor import ArticleExtractor, ArticleExtractionError
-from app.services.text_cleaner import TextCleaner
-from app.services.multilingual_summarizer import MultilingualSummarizer
+from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
+from app.services.article_extractor import ArticleExtractionError, ArticleExtractor
 from app.services.language_detector import LanguageDetector
+from app.services.multilingual_summarizer import MultilingualSummarizer
+from app.services.text_cleaner import TextCleaner
 from app.services.topic_classifier import TopicClassifier
 from app.db import get_db_session
 from app.repositories.article_repo import ArticleRepository
@@ -16,7 +20,6 @@ from app.repositories.summary_repo import SummaryRepository
 from app.models.article import Article
 from app.models.summary import Summary
 from app.utils.cache import compute_content_hash
-from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
 from app.utils.logger import logger
 
 summarization_bp = Blueprint("summarization_api", __name__)
