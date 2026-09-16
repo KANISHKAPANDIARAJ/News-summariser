@@ -1,11 +1,10 @@
 """Pydantic schemas for Analysis, Translation, and TTS."""
 
-from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field
 
 class AnalyzeRequest(BaseModel):
-    text: Optional[str] = None
-    url: Optional[str] = None
+    text: str | None = None
+    url: str | None = None
     num_key_points: int = 5
 
 class TranslateRequest(BaseModel):
@@ -22,4 +21,8 @@ class CompareRequest(BaseModel):
     text_b: str
 
 class MultiSourceRequest(BaseModel):
-    articles: List[Dict[str, str]] = Field(..., min_length=2, description="List of articles with 'text' and optional 'title'")
+    articles: List[Dict[str, str]] = Field(
+        ...,
+        min_length=2,
+        description="List of articles with 'text' and optional 'title'"
+    )
