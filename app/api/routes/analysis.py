@@ -1,7 +1,7 @@
 """Intelligence Analysis REST API route with multilingual support and framing signals."""
 
-from __future__ import annotations
 import re
+
 
 from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
@@ -58,7 +58,7 @@ def compute_framing_signals(text: str) -> dict[str, str]:
         "confirmed",
         "announced",
         "கூறினார்",
-        "தெரிவிட்டார்",
+        "தெரிவித்தார்",
     ]
     attr_count = sum(
         len(re.findall(rf"\b{w}\b", text_lower)) for w in attribution_words
@@ -147,7 +147,7 @@ def analyze_article():
     try:
         sentiment = sentiment_analyzer.analyze(cleaned_text)
     except Exception as e:  # noqa: BLE001
-        logger.warning(f"Sentiment analysis warning: {e!s}")
+        logger.warning(f"Sentiment analysis warning: {e}")
         sentiment = {
             "label": "neutral",
             "score": 1.0,
