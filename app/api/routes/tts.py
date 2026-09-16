@@ -1,7 +1,8 @@
 """Text-to-Speech REST API routes."""
 
 from pathlib import Path
-from flask import Blueprint, request, jsonify, send_file, url_for
+
+from flask import Blueprint, jsonify, request, send_file
 from pydantic import ValidationError
 from app.api.schemas.analysis import TTSRequest
 from app.api.schemas.common import ApiResponse
@@ -35,11 +36,11 @@ def generate_audio():
             "cached": audio_info["cached"],
             "size_bytes": audio_info["size_bytes"],
         }).model_dump()), 200
-    except Exception as e:
-        logger.error(f"TTS audio synthesis error: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"TTS audio synthesis error: {e!s}")
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.TTS_GENERATION_FAILED,
-            message=f"TTS synthesis failed: {str(e)}"
+            message=f"TTS synthesis failed: {e!s}"
         ).model_dump()), 500
 
 @tts_bp.route("/api/tts/audio/<filename>", methods=["GET"])

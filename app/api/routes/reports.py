@@ -1,12 +1,12 @@
 """Report generation endpoints for PDF download."""
 
 import io
-from flask import Blueprint, request, send_file, jsonify
+from flask import Blueprint, jsonify, request, send_file
+from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.db import get_db_session
 from app.repositories.summary_repo import SummaryRepository
 from app.services.pdf_report import PDFReportGenerator
-from app.api.schemas.common import ApiResponse
-from app.constants import ErrorCodes
 from app.utils.logger import logger
 
 reports_bp = Blueprint("reports_api", __name__)
@@ -72,11 +72,11 @@ def download_summary_pdf(summary_id: str):
                 as_attachment=True,
                 download_name=safe_filename
             )
-        except Exception as e:
-            logger.error(f"Error generating PDF report for {summary_id}: {e}")
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Error generating PDF report for {summary_id}: {e!s}")
             return jsonify(ApiResponse.fail(
                 code="PDF_GENERATION_FAILED",
-                message=f"Failed to generate PDF: {str(e)}"
+                message=f"Failed to generate PDF: {e!s}"
             ).model_dump()), 500
 
 @reports_bp.route("/api/reports/pdf", methods=["POST"])
@@ -93,9 +93,9 @@ def generate_dynamic_pdf():
             as_attachment=True,
             download_name=f"news_intelligence_report_{lang}.pdf"
         )
-    except Exception as e:
-        logger.error(f"Dynamic PDF generation error: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Dynamic PDF generation error: {e!s}")
         return jsonify(ApiResponse.fail(
             code="PDF_GENERATION_FAILED",
-            message=str(e)
+            message=f"{e!s}"
         ).model_dump()), 500

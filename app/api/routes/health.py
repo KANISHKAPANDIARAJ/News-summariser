@@ -1,10 +1,13 @@
 """Health check and readiness endpoints."""
 
 import time
+
 from flask import Blueprint, jsonify
+
+from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.db import engine
 from app.ml.model_manager import get_model_manager
-from app.api.schemas.common import ApiResponse
 
 health_bp = Blueprint("health", __name__)
 
@@ -17,7 +20,7 @@ def health_check():
         with engine.connect() as conn:
             conn.exec_driver_sql("SELECT 1")
             db_ok = True
-    except Exception:
+    except Exception:  # noqa: BLE001
         db_ok = False
 
     status = "healthy" if db_ok else "degraded"

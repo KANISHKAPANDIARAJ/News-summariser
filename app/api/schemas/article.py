@@ -1,6 +1,8 @@
 """Pydantic schemas for Article requests and responses."""
 
-from pydantic import BaseModel, Field, HttpUrl
+from typing import Optional
+
+from pydantic import BaseModel, Field
 
 class ArticleExtractRequest(BaseModel):
     url: str = Field(..., description="Target web article URL to scrape")

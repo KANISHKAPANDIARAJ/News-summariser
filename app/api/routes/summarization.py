@@ -1,9 +1,9 @@
 """Summarization REST API routes with multilingual support and partial success handling."""
 
 import time
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
-from app.api.schemas.summary import SummarizeRequest, SummaryResponse
+from app.api.schemas.summary import SummarizeRequest
 from app.api.schemas.common import ApiResponse
 from app.services.article_extractor import ArticleExtractor, ArticleExtractionError
 from app.services.text_cleaner import TextCleaner
@@ -16,7 +16,7 @@ from app.repositories.summary_repo import SummaryRepository
 from app.models.article import Article
 from app.models.summary import Summary
 from app.utils.cache import compute_content_hash
-from app.constants import ErrorCodes, SUPPORTED_LANGUAGES
+from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
 from app.utils.logger import logger
 
 summarization_bp = Blueprint("summarization_api", __name__)
@@ -73,10 +73,10 @@ def summarize_article():
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
                 message=str(ee)
             ).model_dump()), 400
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return jsonify(ApiResponse.fail(
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=f"Extraction failed: {str(e)}"
+                message=f"Extraction failed: {e!s}"
             ).model_dump()), 400
     else:
         raw_text = req.text
@@ -108,11 +108,11 @@ def summarize_article():
             target_lang=effective_target_lang,
             length_profile=req.length_profile
         )
-    except Exception as e:
-        logger.error(f"Multilingual summarization failure: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Multilingual summarization failure: {e!s}")
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.SUMMARIZATION_FAILED,
-            message=f"Summarization pipeline failed: {str(e)}"
+            message=f"Summarization pipeline failed: {e!s}"
         ).model_dump()), 500
 
     total_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)

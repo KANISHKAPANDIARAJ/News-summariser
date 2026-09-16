@@ -1,12 +1,13 @@
 """Semantic comparison and multi-source analysis routes."""
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
+
 from pydantic import ValidationError
 from app.api.schemas.analysis import CompareRequest, MultiSourceRequest
 from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.services.comparison_service import ArticleComparisonService
 from app.services.news_aggregator import MultiSourceAggregator
-from app.constants import ErrorCodes
 from app.utils.logger import logger
 
 comparison_bp = Blueprint("comparison_api", __name__)
@@ -29,11 +30,11 @@ def compare_articles():
     try:
         res = comparator.compare(req.text_a, req.text_b)
         return jsonify(ApiResponse.ok(res).model_dump()), 200
-    except Exception as e:
-        logger.error(f"Article comparison failed: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Article comparison failed: {e!s}")
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.INTERNAL_SERVER_ERROR,
-            message=f"Comparison failed: {str(e)}"
+            message=f"Comparison failed: {e!s}"
         ).model_dump()), 500
 
 @comparison_bp.route("/api/multi-source", methods=["POST"])
@@ -57,9 +58,9 @@ def multi_source_synthesis():
             code=ErrorCodes.VALIDATION_ERROR,
             message=str(ve)
         ).model_dump()), 400
-    except Exception as e:
-        logger.error(f"Multi-source analysis failed: {e}")
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Multi-source analysis failed: {e!s}")
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.INTERNAL_SERVER_ERROR,
-            message=f"Multi-source analysis failed: {str(e)}"
+            message=f"Multi-source analysis failed: {e!s}"
         ).model_dump()), 500

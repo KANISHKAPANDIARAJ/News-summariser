@@ -1,11 +1,11 @@
 """Article Q&A REST API route."""
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.services.qa_service import ArticleQAService
 from app.services.article_extractor import ArticleExtractor
 from app.services.text_cleaner import TextCleaner
-from app.constants import ErrorCodes
 
 qa_bp = Blueprint("qa_api", __name__)
 extractor = ArticleExtractor()
@@ -28,10 +28,10 @@ def ask_article():
         try:
             extracted = extractor.extract(url)
             article_text = extracted.get("text", "")
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return jsonify(ApiResponse.fail(
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=f"Could not extract article: {e}"
+                message=f"Could not extract article: {e!s}"
             ).model_dump()), 400
 
     cleaned = TextCleaner.clean(article_text)

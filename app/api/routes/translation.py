@@ -1,11 +1,15 @@
 """Translation REST API route with quality validation and fallback routing."""
 
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
 from app.api.schemas.analysis import TranslateRequest
 from app.api.schemas.common import ApiResponse
-from app.services.translation_manager import get_translation_manager, TranslationPairError, TranslationValidationError
-from app.constants import ErrorCodes, SUPPORTED_LANGUAGES
+from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
+from app.services.translation_manager import (
+    TranslationPairError,
+    TranslationValidationError,
+    get_translation_manager,
+)
 
 translation_bp = Blueprint("translation_api", __name__)
 translation_mgr = get_translation_manager()
@@ -41,8 +45,8 @@ def translate_content():
             code=ErrorCodes.TRANSLATION_FAILED,
             message=str(te)
         ).model_dump()), 400
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         return jsonify(ApiResponse.fail(
             code=ErrorCodes.INTERNAL_SERVER_ERROR,
-            message=f"Translation failed: {str(e)}"
+            message=f"Translation failed: {e!s}"
         ).model_dump()), 500

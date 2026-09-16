@@ -2,9 +2,9 @@
 
 from flask import Blueprint, jsonify, request
 from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.db import get_db_session
 from app.repositories.summary_repo import SummaryRepository
-from app.constants import ErrorCodes
 
 history_bp = Blueprint("history_api", __name__)
 

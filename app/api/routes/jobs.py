@@ -2,9 +2,9 @@
 
 from flask import Blueprint, jsonify
 from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.db import get_db_session
 from app.repositories.job_repo import JobRepository
-from app.constants import ErrorCodes
 
 jobs_bp = Blueprint("jobs_api", __name__)
 
