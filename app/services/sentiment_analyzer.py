@@ -1,9 +1,10 @@
 """Aggregated multi-segment document sentiment analyzer."""
 
-from typing import Dict, Any, List
+from typing import Dict, Any
 from app.ml.model_manager import get_model_manager
 from app.services.text_cleaner import TextCleaner
 from app.utils.logger import logger
+
 
 class SentimentAnalyzer:
     """Computes sentiment distribution across the full document by aggregating segment scores."""

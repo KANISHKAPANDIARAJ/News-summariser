@@ -1,9 +1,8 @@
 """Text-to-Speech service generating file-backed audio with TTL cleanup."""
 
-import os
 import time
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Dict, Any
 from gtts import gTTS
 from app.config import get_config
 from app.utils.cache import compute_content_hash
@@ -11,12 +10,67 @@ from app.utils.logger import logger
 
 # Supported gTTS language codes
 GTTS_SUPPORTED_LANGS = {
-    'af', 'ar', 'bn', 'bs', 'ca', 'cs', 'cy', 'da', 'de', 'el', 'en', 'eo',
-    'es', 'et', 'fi', 'fr', 'gu', 'hi', 'hr', 'hu', 'id', 'is', 'it', 'ja',
-    'jw', 'km', 'kn', 'ko', 'la', 'lv', 'mk', 'ml', 'mr', 'my', 'ne', 'nl',
-    'no', 'pl', 'pt', 'ro', 'ru', 'si', 'sk', 'sq', 'sr', 'su', 'sv', 'sw',
-    'ta', 'te', 'th', 'tl', 'tr', 'uk', 'ur', 'vi', 'zh-CN', 'zh-TW', 'zh'
+    "af",
+    "ar",
+    "bn",
+    "bs",
+    "ca",
+    "cs",
+    "cy",
+    "da",
+    "de",
+    "el",
+    "en",
+    "eo",
+    "es",
+    "et",
+    "fi",
+    "fr",
+    "gu",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "is",
+    "it",
+    "ja",
+    "jw",
+    "km",
+    "kn",
+    "ko",
+    "la",
+    "lv",
+    "mk",
+    "ml",
+    "mr",
+    "my",
+    "ne",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "si",
+    "sk",
+    "sq",
+    "sr",
+    "su",
+    "sv",
+    "sw",
+    "ta",
+    "te",
+    "th",
+    "tl",
+    "tr",
+    "uk",
+    "ur",
+    "vi",
+    "zh-CN",
+    "zh-TW",
+    "zh",
 }
+
 
 class TTSService:
     def __init__(self):
@@ -45,7 +99,9 @@ class TTSService:
                 "size_bytes": filepath.stat().st_size,
             }
 
-        logger.info(f"Synthesizing new audio file with gTTS: {filename} in '{audio_lang}'...")
+        logger.info(
+            f"Synthesizing new audio file with gTTS: {filename} in '{audio_lang}'..."
+        )
         tts = gTTS(text=text.strip(), lang=audio_lang, slow=False)
         tts.save(str(filepath))
 

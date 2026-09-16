@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from sqlalchemy.orm import Session
 from app.models.job import ProcessingJob
 
+
 class JobRepository:
     def __init__(self, session: Session):
         self.session = session
@@ -18,9 +19,13 @@ class JobRepository:
         return job
 
     def get_by_id(self, job_id: str) -> Optional[ProcessingJob]:
-        return self.session.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+        return (
+            self.session.query(ProcessingJob).filter(ProcessingJob.id == job_id).first()
+        )
 
-    def update_progress(self, job_id: str, progress: int, stage: str, status: str = "processing"):
+    def update_progress(
+        self, job_id: str, progress: int, stage: str, status: str = "processing"
+    ):
         job = self.get_by_id(job_id)
         if job:
             job.progress = progress

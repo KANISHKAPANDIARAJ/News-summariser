@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from pydantic import BaseModel, Field
 
+
 class ArticleExtractRequest(BaseModel):
     url: str = Field(..., description="Target web article URL to scrape")
+
 
 class ArticleResponse(BaseModel):
     id: str | None = None

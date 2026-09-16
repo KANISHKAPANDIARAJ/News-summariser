@@ -11,6 +11,7 @@ from app.repositories.job_repo import JobRepository
 
 jobs_bp = Blueprint("jobs_api", __name__)
 
+
 @jobs_bp.route("/api/jobs/<job_id>", methods=["GET"])
 def get_job_status(job_id: str):
     """Checks progress and result of an asynchronous processing job."""
@@ -18,9 +19,11 @@ def get_job_status(job_id: str):
         repo = JobRepository(session)
         job = repo.get_by_id(job_id)
         if not job:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.JOB_NOT_FOUND,
-                message=f"Job with ID '{job_id}' not found."
-            ).model_dump()), 404
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.JOB_NOT_FOUND,
+                    message=f"Job with ID '{job_id}' not found.",
+                ).model_dump()
+            ), 404
 
         return jsonify(ApiResponse.ok(job.to_dict()).model_dump()), 200

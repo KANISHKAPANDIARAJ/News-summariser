@@ -10,13 +10,16 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.config import get_config
 from app.models.base import Base
+
 # Import all models to ensure registered on metadata
 import app.models  # noqa: F401
 
 config = get_config()
 
 # SQLite needs check_same_thread=False for multithreading
-connect_args = {"check_same_thread": False} if config.DATABASE_URL.startswith("sqlite") else {}
+connect_args = (
+    {"check_same_thread": False} if config.DATABASE_URL.startswith("sqlite") else {}
+)
 
 engine = create_engine(
     config.DATABASE_URL,
@@ -27,9 +30,11 @@ engine = create_engine(
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 def init_db():
     """Initializes database tables."""
     Base.metadata.create_all(bind=engine)
+
 
 @contextmanager
 def get_db_session() -> Generator[Session, None, None]:

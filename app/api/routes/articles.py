@@ -15,6 +15,7 @@ from app.utils.logger import logger
 articles_bp = Blueprint("articles_api", __name__)
 extractor = ArticleExtractor()
 
+
 @articles_bp.route("/api/articles/extract", methods=["POST"])
 def extract_article():
     """Extracts raw and cleaned article text and metadata from a given URL."""
@@ -22,11 +23,13 @@ def extract_article():
         data = request.get_json(force=True, silent=True) or {}
         req = ArticleExtractRequest(**data)
     except ValidationError as ve:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.VALIDATION_ERROR,
-            message="Invalid request payload.",
-            details=ve.errors()
-        ).model_dump()), 422
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message="Invalid request payload.",
+                details=ve.errors(),
+            ).model_dump()
+        ), 422
 
     try:
         extracted = extractor.extract(req.url)
@@ -42,13 +45,16 @@ def extract_article():
         return jsonify(ApiResponse.ok(result).model_dump()), 200
 
     except ArticleExtractionError as ee:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-            message=str(ee)
-        ).model_dump()), 400
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED, message=str(ee)
+            ).model_dump()
+        ), 400
     except Exception as e:  # noqa: BLE001
         logger.error(f"Unexpected error during article extraction: {e!s}")
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.INTERNAL_SERVER_ERROR,
-            message="An internal server error occurred while extracting the article."
-        ).model_dump()), 500
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.INTERNAL_SERVER_ERROR,
+                message="An internal server error occurred while extracting the article.",
+            ).model_dump()
+        ), 500

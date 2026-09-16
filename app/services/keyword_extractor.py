@@ -1,8 +1,9 @@
 """Keyword extraction using TF-IDF n-gram scoring and saliency ranking."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from app.utils.logger import logger
+
 
 class KeywordExtractor:
     def __init__(self, max_keywords: int = 8):
@@ -21,7 +22,7 @@ class KeywordExtractor:
                 stop_words=None,
                 ngram_range=(1, 2),
                 max_features=1000,
-                token_pattern=r"(?u)\b[^\W\d_]{2,}\b"
+                token_pattern=r"(?u)\b[^\W\d_]{2,}\b",
             )
             tfidf_matrix = vectorizer.fit_transform([text])
             feature_names = vectorizer.get_feature_names_out()
@@ -47,5 +48,6 @@ class KeywordExtractor:
         except Exception as e:
             logger.warning(f"Keyword extraction failed: {e}")
             return []
+
 
 Optional_int = int

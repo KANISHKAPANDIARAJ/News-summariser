@@ -1,17 +1,27 @@
 """Summary Database Model."""
 
 import uuid
-from typing import Optional, List
-from sqlalchemy import String, Text, Integer, Float, ForeignKey
+from typing import Optional, List, TYPE_CHECKING
+from sqlalchemy import String, Text, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
+
+if TYPE_CHECKING:
+    from app.models.article import Article
+    from app.models.translation import Translation
 
 class Summary(Base, TimestampMixin):
     __tablename__ = "summaries"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    article_id: Mapped[str] = mapped_column(String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True)
-    summary_type: Mapped[str] = mapped_column(String(32), default="hierarchical_map_reduce")
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    article_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True
+    )
+    summary_type: Mapped[str] = mapped_column(
+        String(32), default="hierarchical_map_reduce"
+    )
     length_profile: Mapped[str] = mapped_column(String(32), default="medium")
     text: Mapped[str] = mapped_column(Text, nullable=False)
     compression_ratio: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
@@ -20,7 +30,9 @@ class Summary(Base, TimestampMixin):
 
     # Relationships
     article: Mapped["Article"] = relationship("Article", back_populates="summaries")
-    translations: Mapped[List["Translation"]] = relationship("Translation", back_populates="summary", cascade="all, delete-orphan")
+    translations: Mapped[List["Translation"]] = relationship(
+        "Translation", back_populates="summary", cascade="all, delete-orphan"
+    )
 
     def to_dict(self):
         return {

@@ -3,7 +3,7 @@
 import hashlib
 import time
 from typing import Optional, Any, Dict
-from app.utils.logger import logger
+
 
 class MemoryCache:
     """Thread-safe TTL in-memory cache with fallback interface."""
@@ -23,10 +23,7 @@ class MemoryCache:
 
     def set(self, key: str, value: Any, ttl: Optional[int] = None):
         ttl = ttl if ttl is not None else self.default_ttl
-        self._store[key] = {
-            "value": value,
-            "expires_at": time.time() + ttl
-        }
+        self._store[key] = {"value": value, "expires_at": time.time() + ttl}
 
     def delete(self, key: str):
         self._store.pop(key, None)
@@ -34,10 +31,12 @@ class MemoryCache:
     def clear(self):
         self._store.clear()
 
+
 def compute_content_hash(content: str) -> str:
     """Computes a deterministic SHA-256 hash of normalized text or URL."""
     normalized = " ".join(content.strip().split())
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
 
 # Global cache instance
 cache = MemoryCache()

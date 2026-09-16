@@ -5,6 +5,7 @@ from app.services.keyword_extractor import KeywordExtractor
 from app.services.entity_extractor import EntityExtractor
 from app.services.comparison_service import ArticleComparisonService
 
+
 def test_keypoint_extractor_mmr():
     extractor = KeypointExtractor(diversity_lambda=0.65)
     text = (
@@ -21,6 +22,7 @@ def test_keypoint_extractor_mmr():
         assert "score" in kp
         assert len(kp["text"]) > 10
 
+
 def test_keyword_extractor():
     extractor = KeywordExtractor(max_keywords=5)
     text = (
@@ -29,7 +31,10 @@ def test_keyword_extractor():
     )
     keywords = extractor.extract_keywords(text)
     assert len(keywords) > 0
-    assert any("learning" in k or "transformer" in k or "language" in k for k in keywords)
+    assert any(
+        "learning" in k or "transformer" in k or "language" in k for k in keywords
+    )
+
 
 def test_entity_extractor():
     extractor = EntityExtractor()
@@ -37,6 +42,7 @@ def test_entity_extractor():
     entities = extractor.extract_entities(text)
     labels = {e["label"] for e in entities}
     assert "ORGANIZATION" in labels or "LOCATION" in labels or "DATE" in labels
+
 
 def test_article_comparison():
     service = ArticleComparisonService()

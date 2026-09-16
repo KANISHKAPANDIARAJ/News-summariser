@@ -1,15 +1,17 @@
 """Extractive Semantic Q&A service answering questions using article evidence."""
 
-from typing import Dict, Any, List
-import numpy as np
+from typing import Dict, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from app.services.text_cleaner import TextCleaner
 from app.utils.logger import logger
 
+
 class ArticleQAService:
     @classmethod
-    def answer_question(cls, article_text: str, question: str, top_k: int = 3) -> Dict[str, Any]:
+    def answer_question(
+        cls, article_text: str, question: str, top_k: int = 3
+    ) -> Dict[str, Any]:
         """Answers factual questions using semantic sentence retrieval over the article."""
         if not article_text or not article_text.strip():
             return {
@@ -35,9 +37,7 @@ class ArticleQAService:
 
         try:
             vectorizer = TfidfVectorizer(
-                ngram_range=(1, 2),
-                max_features=2500,
-                sublinear_tf=True
+                ngram_range=(1, 2), max_features=2500, sublinear_tf=True
             )
             tfidf_matrix = vectorizer.fit_transform(sentences)
             q_vec = vectorizer.transform([question.strip()])
@@ -49,10 +49,9 @@ class ArticleQAService:
             for idx in top_indices[:top_k]:
                 score = float(sims[idx])
                 if score > 0.05:
-                    relevant_sentences.append({
-                        "sentence": sentences[idx],
-                        "relevance_score": round(score, 3)
-                    })
+                    relevant_sentences.append(
+                        {"sentence": sentences[idx], "relevance_score": round(score, 3)}
+                    )
 
             if not relevant_sentences:
                 return {
@@ -62,7 +61,9 @@ class ArticleQAService:
                 }
 
             # Synthesize direct extractive answer from top matching evidence
-            answer_text = " ".join([item["sentence"] for item in relevant_sentences[:2]])
+            answer_text = " ".join(
+                [item["sentence"] for item in relevant_sentences[:2]]
+            )
             top_score = relevant_sentences[0]["relevance_score"]
 
             return {

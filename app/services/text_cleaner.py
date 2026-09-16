@@ -2,7 +2,7 @@
 
 import re
 import unicodedata
-from typing import List, Tuple, Dict, Any
+from typing import List
 
 # Common news boilerplate patterns
 BOILERPLATE_PATTERNS = [
@@ -17,6 +17,7 @@ BOILERPLATE_PATTERNS = [
     r"(?i)we use cookies to improve your experience",
     r"(?i)photo by [^.\n]+",
 ]
+
 
 class TextCleaner:
     @staticmethod

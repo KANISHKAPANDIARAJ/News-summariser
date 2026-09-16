@@ -1,14 +1,16 @@
 """Common Pydantic API response and error models."""
 
-from typing import Generic, TypeVar, Optional, Any, Dict
-from pydantic import BaseModel, Field
+from typing import Generic, TypeVar, Optional, Any
+from pydantic import BaseModel
 
 T = TypeVar("T")
+
 
 class ErrorDetail(BaseModel):
     code: str
     message: str
     details: Optional[Any] = None
+
 
 class ApiResponse(BaseModel, Generic[T]):
     success: bool = True
@@ -20,5 +22,11 @@ class ApiResponse(BaseModel, Generic[T]):
         return cls(success=True, data=data, error=None)
 
     @classmethod
-    def fail(cls, code: str, message: str, details: Optional[Any] = None) -> "ApiResponse[None]":
-        return cls(success=False, data=None, error=ErrorDetail(code=code, message=message, details=details))
+    def fail(
+        cls, code: str, message: str, details: Optional[Any] = None
+    ) -> "ApiResponse[None]":
+        return cls(
+            success=False,
+            data=None,
+            error=ErrorDetail(code=code, message=message, details=details),
+        )
