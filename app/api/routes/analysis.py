@@ -24,7 +24,7 @@ keypoint_extractor = KeypointExtractor()
 keyword_extractor = KeywordExtractor()
 entity_extractor = EntityExtractor()
 
-def compute_framing_signals(text: str) -> Dict[str, str]:
+def compute_framing_signals(text: str) -> dict[str, str]:
     """Computes experimental linguistic framing indicators."""
     text_lower = text.lower()
     
@@ -75,10 +75,10 @@ def analyze_article():
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
                 message=str(ee)
             ).model_dump()), 400
-        except Exception as e:
+        except Exception as e: # noqa: BLE001
             return jsonify(ApiResponse.fail(
                 code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=f"Extraction failed: {e}"
+                message=f"Extraction failed: {e!s}"
             ).model_dump()), 400
     else:
         raw_text = req.text
@@ -96,26 +96,26 @@ def analyze_article():
     # 1. Run Intelligence Pipeline with error tolerance
     try:
         sentiment = sentiment_analyzer.analyze(cleaned_text)
-    except Exception as e:
+    except Exception as e: # noqa: BLE001
         logger.warning(f"Sentiment analysis warning: {e}")
         sentiment = {"label": "neutral", "score": 1.0, "distribution": {"positive": 0.33, "neutral": 0.34, "negative": 0.33}}
 
     try:
         key_points = keypoint_extractor.extract_key_points(cleaned_text, top_n=req.num_key_points)
-    except Exception as e:
-        logger.warning(f"Keypoint extraction warning: {e}")
+    except Exception as e: # noqa: BLE001
+        logger.warning(f"Keypoint extraction warning: {e!s}")
         key_points = []
 
     try:
         keywords = keyword_extractor.extract_keywords(cleaned_text, top_n=8)
-    except Exception as e:
-        logger.warning(f"Keyword extraction warning: {e}")
+    except Exception as e: # noqa: BLE001
+        logger.warning(f"Keyword extraction warning: {e!s}")
         keywords = []
 
     try:
         entities = entity_extractor.extract_entities(cleaned_text)
-    except Exception as e:
-        logger.warning(f"Entity extraction warning: {e}")
+    except Exception as e: # noqa: BLE001
+        logger.warning(f"Entity extraction warning: {e!s}")
         entities = []
 
     framing = compute_framing_signals(cleaned_text)
