@@ -7,6 +7,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from app.services.text_cleaner import TextCleaner
 from app.utils.logger import logger
 
+
 class KeypointExtractor:
     def __init__(self, diversity_lambda: float = 0.65):
         """
@@ -34,7 +35,7 @@ class KeypointExtractor:
                 stop_words="english",
                 ngram_range=(1, 2),
                 max_features=2000,
-                sublinear_tf=True
+                sublinear_tf=True,
             )
             sentence_vectors = vectorizer.fit_transform(candidates)
             # Document centroid vector representing the entire text theme
@@ -60,8 +61,13 @@ class KeypointExtractor:
                 for cand_idx in candidate_indices:
                     relevance = doc_sims[cand_idx]
                     # Max similarity to any already selected sentence
-                    redundancy = max(pairwise_sims[cand_idx][sel_idx] for sel_idx in selected_indices)
-                    score = self.diversity_lambda * relevance - (1.0 - self.diversity_lambda) * redundancy
+                    redundancy = max(
+                        pairwise_sims[cand_idx][sel_idx] for sel_idx in selected_indices
+                    )
+                    score = (
+                        self.diversity_lambda * relevance
+                        - (1.0 - self.diversity_lambda) * redundancy
+                    )
                     mmr_scores.append(score)
 
                 best_cand_idx = candidate_indices[int(np.argmax(mmr_scores))]
@@ -69,14 +75,13 @@ class KeypointExtractor:
                 candidate_indices.remove(best_cand_idx)
 
             results = [
-                {
-                    "text": candidates[idx],
-                    "score": round(float(doc_sims[idx]), 4)
-                }
+                {"text": candidates[idx], "score": round(float(doc_sims[idx]), 4)}
                 for idx in selected_indices
             ]
             return results
 
         except Exception as e:
-            logger.error(f"MMR key-point extraction error: {e}. Falling back to length-filtered sentences.")
+            logger.error(
+                f"MMR key-point extraction error: {e}. Falling back to length-filtered sentences."
+            )
             return [{"text": s, "score": 0.5} for s in candidates[:top_n]]

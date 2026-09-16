@@ -4,9 +4,10 @@ import time
 import re
 from typing import Dict, Any, Optional, List
 from app.services.summarizer import HierarchicalSummarizer, SummarizationError
-from app.services.translation_manager import get_translation_manager, TranslationValidationError, TranslationPairError
+from app.services.translation_manager import get_translation_manager
 from app.services.language_detector import LanguageDetector
 from app.utils.logger import logger
+
 
 class MultilingualSummarizer:
     def __init__(self):
@@ -14,13 +15,19 @@ class MultilingualSummarizer:
         self.translation_manager = get_translation_manager()
 
     @staticmethod
-    def calculate_quality_score(summary: str, original_text: str, target_lang: str) -> Dict[str, Any]:
+    def calculate_quality_score(
+        summary: str, original_text: str, target_lang: str
+    ) -> Dict[str, Any]:
         """Calculates a multi-factor quality score for the generated summary."""
         warnings: List[str] = []
         score = 1.0
 
         if not summary or not summary.strip():
-            return {"score": 0.0, "level": "poor", "warnings": ["Empty summary produced."]}
+            return {
+                "score": 0.0,
+                "level": "poor",
+                "warnings": ["Empty summary produced."],
+            }
 
         orig_words = max(1, len(original_text.split()))
         summ_words = len(summary.split())
@@ -37,7 +44,7 @@ class MultilingualSummarizer:
         # 2. Repetition Ratio (Trigrams)
         words = summary.split()
         if len(words) >= 6:
-            trigrams = [tuple(words[i:i+3]) for i in range(len(words)-2)]
+            trigrams = [tuple(words[i : i + 3]) for i in range(len(words) - 2)]
             rep_ratio = 1.0 - (len(set(trigrams)) / max(1, len(trigrams)))
             if rep_ratio > 0.35:
                 score -= 0.30
@@ -62,7 +69,9 @@ class MultilingualSummarizer:
                 warnings.append(f"Contains model artifact: {token}")
 
         final_score = round(max(0.0, min(1.0, score)), 2)
-        level = "good" if final_score >= 0.75 else "fair" if final_score >= 0.50 else "poor"
+        level = (
+            "good" if final_score >= 0.75 else "fair" if final_score >= 0.50 else "poor"
+        )
 
         return {
             "score": final_score,
@@ -87,7 +96,9 @@ class MultilingualSummarizer:
         if not source_lang or source_lang == "auto":
             det = LanguageDetector.detect(text)
             source_lang = det["language_code"]
-            logger.info(f"Detected language '{source_lang}' ({det['language_name']}) with {det['confidence']} confidence.")
+            logger.info(
+                f"Detected language '{source_lang}' ({det['language_name']}) with {det['confidence']} confidence."
+            )
 
         source_lang = source_lang.lower().strip()
         target_lang = target_lang.lower().strip()
@@ -112,33 +123,49 @@ class MultilingualSummarizer:
             }
 
         # Route B: Non-English Source (e.g. Tamil) -> Translate-Summarize-Translate Pipeline
-        logger.info(f"Executing Translate-Summarize-Translate pipeline for '{source_lang}' to '{target_lang}'...")
+        logger.info(
+            f"Executing Translate-Summarize-Translate pipeline for '{source_lang}' to '{target_lang}'..."
+        )
         pipeline_type = "translate_summarize_translate"
 
         # Step 1: Translate Source to English if source is not English
         if source_lang != "en":
             try:
-                logger.info(f"Translating source article ({len(text)} chars) from {source_lang} to en...")
-                trans_to_en = self.translation_manager.translate(text, src_lang=source_lang, tgt_lang="en")
+                logger.info(
+                    f"Translating source article ({len(text)} chars) from {source_lang} to en..."
+                )
+                trans_to_en = self.translation_manager.translate(
+                    text, src_lang=source_lang, tgt_lang="en"
+                )
                 english_text = trans_to_en["translation"]
             except Exception as e:
                 logger.error(f"Translation from {source_lang} to English failed: {e}")
-                raise SummarizationError(f"Could not prepare multilingual pipeline: {e}")
+                raise SummarizationError(
+                    f"Could not prepare multilingual pipeline: {e}"
+                )
         else:
             english_text = text
 
         # Step 2: High-Quality English Summarization
-        res_en = self.english_summarizer.summarize(english_text, length_profile=length_profile)
+        res_en = self.english_summarizer.summarize(
+            english_text, length_profile=length_profile
+        )
         english_summary = res_en["summary"]
 
         # Step 3: Translate Summary to Target Language
         if target_lang != "en":
             try:
-                logger.info(f"Translating English summary to target language '{target_lang}'...")
-                trans_final = self.translation_manager.translate(english_summary, src_lang="en", tgt_lang=target_lang)
+                logger.info(
+                    f"Translating English summary to target language '{target_lang}'..."
+                )
+                trans_final = self.translation_manager.translate(
+                    english_summary, src_lang="en", tgt_lang=target_lang
+                )
                 final_summary = trans_final["translation"]
             except Exception as e:
-                logger.warning(f"Translation to {target_lang} failed: {e}. Falling back to English summary.")
+                logger.warning(
+                    f"Translation to {target_lang} failed: {e}. Falling back to English summary."
+                )
                 final_summary = english_summary
                 target_lang = "en"
         else:

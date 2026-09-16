@@ -1,15 +1,22 @@
 """Article Database Model."""
 
 import uuid
-from typing import Optional, List
+from typing import Optional, List, TYPE_CHECKING
 from sqlalchemy import String, Text, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
+if TYPE_CHECKING:
+    from app.models.analysis import AnalysisResult
+    from app.models.summary import Summary
+
+
 class Article(Base, TimestampMixin):
     __tablename__ = "articles"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
     url: Mapped[Optional[str]] = mapped_column(String(2048), nullable=True, index=True)
     content_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     title: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
@@ -23,8 +30,15 @@ class Article(Base, TimestampMixin):
     word_count: Mapped[int] = mapped_column(Integer, default=0)
 
     # Relationships
-    summaries: Mapped[List["Summary"]] = relationship("Summary", back_populates="article", cascade="all, delete-orphan")
-    analysis: Mapped[Optional["AnalysisResult"]] = relationship("AnalysisResult", back_populates="article", uselist=False, cascade="all, delete-orphan")
+    summaries: Mapped[List["Summary"]] = relationship(
+        "Summary", back_populates="article", cascade="all, delete-orphan"
+    )
+    analysis: Mapped[Optional["AnalysisResult"]] = relationship(
+        "AnalysisResult",
+        back_populates="article",
+        uselist=False,
+        cascade="all, delete-orphan",
+    )
 
     def to_dict(self):
         return {

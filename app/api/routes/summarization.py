@@ -1,14 +1,18 @@
 """Summarization REST API routes with multilingual support and partial success handling."""
 
+from __future__ import annotations
 import time
-from flask import Blueprint, request, jsonify
+
+from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
-from app.api.schemas.summary import SummarizeRequest, SummaryResponse
+
+from app.api.schemas.summary import SummarizeRequest
 from app.api.schemas.common import ApiResponse
-from app.services.article_extractor import ArticleExtractor, ArticleExtractionError
-from app.services.text_cleaner import TextCleaner
-from app.services.multilingual_summarizer import MultilingualSummarizer
+from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
+from app.services.article_extractor import ArticleExtractionError, ArticleExtractor
 from app.services.language_detector import LanguageDetector
+from app.services.multilingual_summarizer import MultilingualSummarizer
+from app.services.text_cleaner import TextCleaner
 from app.services.topic_classifier import TopicClassifier
 from app.db import get_db_session
 from app.repositories.article_repo import ArticleRepository
@@ -16,12 +20,12 @@ from app.repositories.summary_repo import SummaryRepository
 from app.models.article import Article
 from app.models.summary import Summary
 from app.utils.cache import compute_content_hash
-from app.constants import ErrorCodes, SUPPORTED_LANGUAGES
 from app.utils.logger import logger
 
 summarization_bp = Blueprint("summarization_api", __name__)
 extractor = ArticleExtractor()
 multilingual_summarizer = MultilingualSummarizer()
+
 
 @summarization_bp.route("/api/summarize", methods=["POST"])
 def summarize_article():
@@ -32,24 +36,30 @@ def summarize_article():
         data = request.get_json(force=True, silent=True) or {}
         req = SummarizeRequest(**data)
     except ValidationError as ve:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.VALIDATION_ERROR,
-            message="Invalid request payload.",
-            details=ve.errors()
-        ).model_dump()), 422
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message="Invalid request payload.",
+                details=ve.errors(),
+            ).model_dump()
+        ), 422
 
     if not req.url and not req.text:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.VALIDATION_ERROR,
-            message="Either 'url' or 'text' must be provided."
-        ).model_dump()), 400
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message="Either 'url' or 'text' must be provided.",
+            ).model_dump()
+        ), 400
 
     target_lang = (req.language or "en").lower().strip()
     if target_lang != "auto" and target_lang not in SUPPORTED_LANGUAGES:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.UNSUPPORTED_LANGUAGE,
-            message=f"Language '{target_lang}' is not supported."
-        ).model_dump()), 400
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.UNSUPPORTED_LANGUAGE,
+                message=f"Language '{target_lang}' is not supported.",
+            ).model_dump()
+        ), 400
 
     # 1. Retrieve or extract content
     article_title = "Direct Input"
@@ -69,24 +79,29 @@ def summarize_article():
             published_date = extracted.get("published_date")
             image_url = extracted.get("image_url")
         except ArticleExtractionError as ee:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=str(ee)
-            ).model_dump()), 400
-        except Exception as e:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=f"Extraction failed: {str(e)}"
-            ).model_dump()), 400
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.ARTICLE_EXTRACTION_FAILED, message=str(ee)
+                ).model_dump()
+            ), 400
+        except Exception as e:  # noqa: BLE001
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
+                    message=f"Extraction failed: {e!s}",
+                ).model_dump()
+            ), 400
     else:
         raw_text = req.text
 
     cleaned_text = TextCleaner.clean(raw_text)
     if len(cleaned_text.strip()) < 30:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.TEXT_TOO_SHORT,
-            message="Article content is too short to summarize (minimum 30 characters)."
-        ).model_dump()), 400
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.TEXT_TOO_SHORT,
+                message="Article content is too short to summarize (minimum 30 characters).",
+            ).model_dump()
+        ), 400
 
     content_hash = compute_content_hash(cleaned_text)
 
@@ -106,14 +121,16 @@ def summarize_article():
             text=cleaned_text,
             source_lang=source_lang,
             target_lang=effective_target_lang,
-            length_profile=req.length_profile
+            length_profile=req.length_profile,
         )
-    except Exception as e:
-        logger.error(f"Multilingual summarization failure: {e}")
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.SUMMARIZATION_FAILED,
-            message=f"Summarization pipeline failed: {str(e)}"
-        ).model_dump()), 500
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Multilingual summarization failure: {e!s}")
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.SUMMARIZATION_FAILED,
+                message=f"Summarization pipeline failed: {e!s}",
+            ).model_dump()
+        ), 500
 
     total_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
     summary_words = len(summ_res["summary"].split())
@@ -178,6 +195,7 @@ def summarize_article():
 
     return jsonify(ApiResponse.ok(response_data).model_dump()), 200
 
+
 @summarization_bp.route("/api/summaries/<summary_id>", methods=["GET"])
 def get_summary_by_id(summary_id: str):
     """Retrieves an existing summary by its unique identifier."""
@@ -185,10 +203,12 @@ def get_summary_by_id(summary_id: str):
         summary_repo = SummaryRepository(session)
         summary = summary_repo.get_by_id(summary_id)
         if not summary:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.RESOURCE_NOT_FOUND,
-                message=f"Summary with ID '{summary_id}' not found."
-            ).model_dump()), 404
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.RESOURCE_NOT_FOUND,
+                    message=f"Summary with ID '{summary_id}' not found.",
+                ).model_dump()
+            ), 404
 
         article = summary.article
         data = {

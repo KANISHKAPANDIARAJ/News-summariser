@@ -1,8 +1,6 @@
 """Font Manager for ReportLab with multilingual Unicode and RTL support."""
 
-import os
 from pathlib import Path
-from typing import Optional
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from app.utils.logger import logger
@@ -11,9 +9,11 @@ from app.utils.logger import logger
 try:
     import arabic_reshaper
     from bidi.algorithm import get_display as bidi_get_display
+
     HAS_ARABIC_SUPPORT = True
 except ImportError:
     HAS_ARABIC_SUPPORT = False
+
 
 class FontManager:
     _initialized = False
@@ -39,7 +39,9 @@ class FontManager:
         if nirmala_path.exists():
             try:
                 pdfmetrics.registerFont(TTFont("IndicUnicode", str(nirmala_path)))
-                logger.info("Registered IndicUnicode font (Nirmala) for Tamil/Hindi/Bengali.")
+                logger.info(
+                    "Registered IndicUnicode font (Nirmala) for Tamil/Hindi/Bengali."
+                )
             except Exception as e:
                 logger.warning(f"Failed to register Nirmala font: {e}")
 
@@ -67,7 +69,11 @@ class FontManager:
         elif lang in cls.ARABIC_LANGS:
             return "GeneralUnicode"
         else:
-            return "GeneralUnicode" if "GeneralUnicode" in pdfmetrics.getRegisteredFontNames() else "Helvetica"
+            return (
+                "GeneralUnicode"
+                if "GeneralUnicode" in pdfmetrics.getRegisteredFontNames()
+                else "Helvetica"
+            )
 
     @classmethod
     def prepare_text(cls, text: str, lang_code: str) -> str:

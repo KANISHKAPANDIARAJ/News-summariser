@@ -4,6 +4,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.models.article import Article
 
+
 class ArticleRepository:
     def __init__(self, session: Session):
         self.session = session
@@ -12,7 +13,11 @@ class ArticleRepository:
         return self.session.query(Article).filter(Article.id == article_id).first()
 
     def get_by_content_hash(self, content_hash: str) -> Optional[Article]:
-        return self.session.query(Article).filter(Article.content_hash == content_hash).first()
+        return (
+            self.session.query(Article)
+            .filter(Article.content_hash == content_hash)
+            .first()
+        )
 
     def get_by_url(self, url: str) -> Optional[Article]:
         return self.session.query(Article).filter(Article.url == url).first()
@@ -23,4 +28,9 @@ class ArticleRepository:
         return article
 
     def list_recent(self, limit: int = 20) -> List[Article]:
-        return self.session.query(Article).order_by(Article.created_at.desc()).limit(limit).all()
+        return (
+            self.session.query(Article)
+            .order_by(Article.created_at.desc())
+            .limit(limit)
+            .all()
+        )

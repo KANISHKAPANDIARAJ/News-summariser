@@ -1,6 +1,14 @@
 """Web UI routes serving dashboard and shared summary reports."""
 
-from flask import Blueprint, render_template, request, redirect, url_for, abort, make_response
+from flask import (
+    Blueprint,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    abort,
+    make_response,
+)
 from app.db import get_db_session
 from app.repositories.summary_repo import SummaryRepository
 from app.repositories.article_repo import ArticleRepository
@@ -9,11 +17,11 @@ from app.models.summary import Summary
 from app.models.translation import Translation
 from app.services.article_extractor import ArticleExtractor, ArticleExtractionError
 from app.services.text_cleaner import TextCleaner
-from app.services.summarizer import HierarchicalSummarizer, SummarizationError
+from app.services.summarizer import HierarchicalSummarizer
 from app.services.sentiment_analyzer import SentimentAnalyzer
 from app.services.keypoint_extractor import KeypointExtractor
 from app.services.translator import TranslationService
-from app.constants import SUPPORTED_LANGUAGES, SUMMARY_LENGTHS
+from app.constants import SUPPORTED_LANGUAGES
 from app.utils.cache import compute_content_hash
 from app.utils.logger import logger
 
@@ -23,6 +31,7 @@ summarizer = HierarchicalSummarizer()
 sentiment_analyzer = SentimentAnalyzer()
 keypoint_extractor = KeypointExtractor()
 translator = TranslationService()
+
 
 @web_bp.route("/", methods=["GET", "POST"])
 def index():
@@ -66,11 +75,18 @@ def index():
         if not error:
             try:
                 # 1. Summarize
-                summ_res = summarizer.summarize(cleaned_text, length_profile=summary_length)
+                summ_res = summarizer.summarize(
+                    cleaned_text, length_profile=summary_length
+                )
                 raw_summary = summ_res["summary"]
 
                 # 2. Keypoints & Sentiment
-                key_sentences_list = [kp["text"] for kp in keypoint_extractor.extract_key_points(cleaned_text, top_n=3)]
+                key_sentences_list = [
+                    kp["text"]
+                    for kp in keypoint_extractor.extract_key_points(
+                        cleaned_text, top_n=3
+                    )
+                ]
                 sentiment = sentiment_analyzer.analyze(cleaned_text)
 
                 # 3. Translation if requested
@@ -118,7 +134,11 @@ def index():
                     summary_id = db_sum.id
 
                 # Redirect to preserve PRG (Post-Redirect-Get) pattern or render
-                resp = make_response(redirect(url_for("web.shared_summary", sum_id=summary_id, lang=language)))
+                resp = make_response(
+                    redirect(
+                        url_for("web.shared_summary", sum_id=summary_id, lang=language)
+                    )
+                )
                 return resp
 
             except Exception as e:
@@ -131,12 +151,14 @@ def index():
         sum_repo = SummaryRepository(session)
         for s in sum_repo.list_recent_summaries(limit=8):
             art = s.article
-            recent_items.append({
-                "id": s.id,
-                "summary": s.text[:90] + "...",
-                "title": art.title if art else "Article Summary",
-                "length": s.length_profile,
-            })
+            recent_items.append(
+                {
+                    "id": s.id,
+                    "summary": s.text[:90] + "...",
+                    "title": art.title if art else "Article Summary",
+                    "length": s.length_profile,
+                }
+            )
 
     return render_template(
         "index.html",
@@ -149,6 +171,7 @@ def index():
         recent=recent_items,
         supported_languages=SUPPORTED_LANGUAGES,
     )
+
 
 @web_bp.route("/s/<sum_id>")
 def shared_summary(sum_id: str):

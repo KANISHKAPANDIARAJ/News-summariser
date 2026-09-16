@@ -1,21 +1,31 @@
 """Analysis Result Database Model."""
 
 import uuid
-from typing import Optional, Dict, Any, List
+from typing import Dict, Any, List, TYPE_CHECKING
 from sqlalchemy import String, Float, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
+if TYPE_CHECKING:
+    from app.models.article import Article
+
 class AnalysisResult(Base, TimestampMixin):
     __tablename__ = "analysis_results"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    article_id: Mapped[str] = mapped_column(String(36), ForeignKey("articles.id", ondelete="CASCADE"), unique=True, index=True)
-    
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    article_id: Mapped[str] = mapped_column(
+        String(36),
+        ForeignKey("articles.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+    )
+
     sentiment_label: Mapped[str] = mapped_column(String(32))
     sentiment_score: Mapped[float] = mapped_column(Float)
     sentiment_distribution: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
-    
+
     key_points: Mapped[List[Any]] = mapped_column(JSON, default=list)
     keywords: Mapped[List[str]] = mapped_column(JSON, default=list)
     entities: Mapped[List[Any]] = mapped_column(JSON, default=list)

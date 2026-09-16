@@ -1,7 +1,8 @@
 """Named Entity Recognition service extracting PERSON, ORG, LOC, DATE, MONEY, PERCENT."""
 
 import re
-from typing import List, Dict, Any
+from typing import List, Dict
+
 
 class EntityExtractor:
     """Extracts structured entities across standard categories."""
@@ -15,16 +16,54 @@ class EntityExtractor:
 
     # Well-known organizations for high-precision matching
     KNOWN_ORGS = {
-        "Google", "Microsoft", "OpenAI", "Apple", "Amazon", "Meta", "Twitter", "Nvidia",
-        "Tesla", "SpaceX", "Anthropic", "IBM", "Intel", "United Nations", "WHO",
-        "European Union", "NASA", "NATO", "BBC", "Reuters", "CNN", "Federal Reserve"
+        "Google",
+        "Microsoft",
+        "OpenAI",
+        "Apple",
+        "Amazon",
+        "Meta",
+        "Twitter",
+        "Nvidia",
+        "Tesla",
+        "SpaceX",
+        "Anthropic",
+        "IBM",
+        "Intel",
+        "United Nations",
+        "WHO",
+        "European Union",
+        "NASA",
+        "NATO",
+        "BBC",
+        "Reuters",
+        "CNN",
+        "Federal Reserve",
     }
 
     # Well-known locations
     KNOWN_LOCS = {
-        "United States", "US", "USA", "UK", "United Kingdom", "India", "China", "Russia",
-        "Germany", "France", "Japan", "California", "New York", "London", "Paris",
-        "Tokyo", "Beijing", "Washington", "San Francisco", "Delhi", "Mumbai", "Europe"
+        "United States",
+        "US",
+        "USA",
+        "UK",
+        "United Kingdom",
+        "India",
+        "China",
+        "Russia",
+        "Germany",
+        "France",
+        "Japan",
+        "California",
+        "New York",
+        "London",
+        "Paris",
+        "Tokyo",
+        "Beijing",
+        "Washington",
+        "San Francisco",
+        "Delhi",
+        "Mumbai",
+        "Europe",
     }
 
     def extract_entities(self, text: str) -> List[Dict[str, str]]:
@@ -44,7 +83,9 @@ class EntityExtractor:
 
         # 1. Regex extractions for MONEY, PERCENT, DATE
         for label, pattern in self.PATTERNS.items():
-            matches = re.finditer(pattern, text, re.IGNORECASE if label != "DATE" else 0)
+            matches = re.finditer(
+                pattern, text, re.IGNORECASE if label != "DATE" else 0
+            )
             for m in matches:
                 add_entity(m.group(), label)
 
@@ -64,7 +105,13 @@ class EntityExtractor:
             if pn in self.KNOWN_ORGS or pn in self.KNOWN_LOCS:
                 continue
             # Filter out common sentence start phrases
-            if pn.lower() in ("the company", "in addition", "according to", "last year", "new york"):
+            if pn.lower() in (
+                "the company",
+                "in addition",
+                "according to",
+                "last year",
+                "new york",
+            ):
                 continue
             # Typical person name check (no company suffix like Inc/Corp)
             if re.search(r"\b(?:Inc|Corp|Ltd|LLC|Group|Association|Board)\b", pn):

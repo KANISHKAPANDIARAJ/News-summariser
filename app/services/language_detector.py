@@ -1,7 +1,7 @@
 """Multilingual Language Detection service combining script analysis and statistical language modeling."""
 
 import re
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import langdetect
 from langdetect import DetectorFactory
 from app.utils.logger import logger
@@ -49,6 +49,7 @@ SCRIPT_RANGES = [
     (re.compile(r"[\u0900-\u097F]"), "hi"),  # Devanagari (Hindi/Marathi)
 ]
 
+
 class LanguageDetector:
     """Robust content-based language detector with script heuristics and fallback modeling."""
 
@@ -60,7 +61,7 @@ class LanguageDetector:
                 "language_name": "English",
                 "native_name": "English",
                 "confidence": 1.0,
-                "detection_method": "default_fallback"
+                "detection_method": "default_fallback",
             }
 
         sample = text[:3000].strip()
@@ -81,13 +82,15 @@ class LanguageDetector:
                     except Exception:
                         pass
 
-                meta = LANGUAGE_METADATA.get(lang_code, {"name": lang_code.upper(), "native": lang_code})
+                meta = LANGUAGE_METADATA.get(
+                    lang_code, {"name": lang_code.upper(), "native": lang_code}
+                )
                 return {
                     "language_code": lang_code,
                     "language_name": meta["name"],
                     "native_name": meta["native"],
                     "confidence": 0.99,
-                    "detection_method": "unicode_script_analysis"
+                    "detection_method": "unicode_script_analysis",
                 }
 
         # 2. Statistical Language Detection via langdetect (for Latin and shared alphabets)
@@ -101,13 +104,15 @@ class LanguageDetector:
                 if lang_code.startswith("zh"):
                     lang_code = "zh"
 
-                meta = LANGUAGE_METADATA.get(lang_code, {"name": lang_code.upper(), "native": lang_code})
+                meta = LANGUAGE_METADATA.get(
+                    lang_code, {"name": lang_code.upper(), "native": lang_code}
+                )
                 return {
                     "language_code": lang_code,
                     "language_name": meta.get("name", lang_code),
                     "native_name": meta.get("native", lang_code),
                     "confidence": round(float(top.prob), 3),
-                    "detection_method": "statistical_langdetect"
+                    "detection_method": "statistical_langdetect",
                 }
         except Exception as e:
             logger.warning(f"Statistical language detection exception: {e}")
@@ -118,5 +123,5 @@ class LanguageDetector:
             "language_name": "English",
             "native_name": "English",
             "confidence": 0.50,
-            "detection_method": "heuristic_fallback"
+            "detection_method": "heuristic_fallback",
         }

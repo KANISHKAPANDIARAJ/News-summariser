@@ -3,18 +3,21 @@
 import re
 import threading
 import torch
-from typing import Dict, Tuple, Optional, Any, List
+from typing import Dict, Tuple, Optional, Any
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 from app.config import get_config
 from app.utils.cache import cache, compute_content_hash
 from app.utils.logger import logger
 from app.services.text_cleaner import TextCleaner
 
+
 class TranslationValidationError(Exception):
     pass
 
+
 class TranslationPairError(Exception):
     pass
+
 
 # Direct translation models registry
 SUPPORTED_PAIRS: Dict[Tuple[str, str], str] = {
@@ -33,7 +36,6 @@ SUPPORTED_PAIRS: Dict[Tuple[str, str], str] = {
     ("en", "ar"): "Helsinki-NLP/opus-mt-en-ar",
     ("en", "bn"): "Helsinki-NLP/opus-mt-en-bn",
     ("en", "mr"): "Helsinki-NLP/opus-mt-en-mr",
-
     # Other -> English
     ("ta", "en"): "Helsinki-NLP/opus-mt-dra-en",
     ("te", "en"): "Helsinki-NLP/opus-mt-dra-en",
@@ -51,6 +53,7 @@ SUPPORTED_PAIRS: Dict[Tuple[str, str], str] = {
     ("ar", "en"): "Helsinki-NLP/opus-mt-ar-en",
 }
 
+
 class TranslationManager:
     _instance: Optional["TranslationManager"] = None
     _lock = threading.Lock()
@@ -64,7 +67,13 @@ class TranslationManager:
 
     def _init_manager(self):
         self.config = get_config()
-        self.device = "cuda" if (self.config.MODEL_DEVICE.lower() == "cuda" and torch.cuda.is_available()) else "cpu"
+        self.device = (
+            "cuda"
+            if (
+                self.config.MODEL_DEVICE.lower() == "cuda" and torch.cuda.is_available()
+            )
+            else "cpu"
+        )
         self._loaded_models: Dict[str, Dict[str, Any]] = {}
         self._load_lock = threading.Lock()
         logger.info(f"TranslationManager initialized. Device: {self.device}")
@@ -72,16 +81,25 @@ class TranslationManager:
     def _get_model(self, model_name: str) -> Tuple[Any, Any]:
         with self._load_lock:
             if model_name not in self._loaded_models:
-                logger.info(f"Loading translation model {model_name} onto {self.device}...")
+                logger.info(
+                    f"Loading translation model {model_name} onto {self.device}..."
+                )
                 tokenizer = AutoTokenizer.from_pretrained(model_name)
                 model = AutoModelForSeq2SeqLM.from_pretrained(model_name)
                 model.to(self.device)
                 model.eval()
-                self._loaded_models[model_name] = {"model": model, "tokenizer": tokenizer}
-            return self._loaded_models[model_name]["model"], self._loaded_models[model_name]["tokenizer"]
+                self._loaded_models[model_name] = {
+                    "model": model,
+                    "tokenizer": tokenizer,
+                }
+            return self._loaded_models[model_name]["model"], self._loaded_models[
+                model_name
+            ]["tokenizer"]
 
     @staticmethod
-    def validate_translation_output(src: str, trans: str, src_lang: str, tgt_lang: str) -> bool:
+    def validate_translation_output(
+        src: str, trans: str, src_lang: str, tgt_lang: str
+    ) -> bool:
         """Validates that translation output is non-empty, contains no tokenizer artifacts, and matches expected scripts."""
         if not trans or not trans.strip():
             raise TranslationValidationError("Translation output is empty.")
@@ -91,28 +109,36 @@ class TranslationManager:
         # Reject model tokens
         for bad_token in ["<pad>", "<unk>", "</s>", "[PAD]", "[UNK]", "NaN", "null"]:
             if bad_token in clean_trans:
-                raise TranslationValidationError(f"Translation output contains model special token: {bad_token}")
+                raise TranslationValidationError(
+                    f"Translation output contains model special token: {bad_token}"
+                )
 
         # Check repetition of identical phrases
         words = clean_trans.split()
         if len(words) >= 6:
-            trigrams = [tuple(words[i:i+3]) for i in range(len(words)-2)]
+            trigrams = [tuple(words[i : i + 3]) for i in range(len(words) - 2)]
             unique_trigrams = set(trigrams)
             rep_ratio = 1.0 - (len(unique_trigrams) / max(1, len(trigrams)))
             if rep_ratio > 0.45:
-                raise TranslationValidationError("Translation output contains excessive repetitive loops.")
+                raise TranslationValidationError(
+                    "Translation output contains excessive repetitive loops."
+                )
 
         # Script consistency check for Tamil target
         if tgt_lang == "ta":
             tamil_chars = len(re.findall(r"[\u0B80-\u0BFF]", clean_trans))
             if tamil_chars < 5 and len(clean_trans) > 20:
-                raise TranslationValidationError("Expected Tamil script in translation output but none was found.")
+                raise TranslationValidationError(
+                    "Expected Tamil script in translation output but none was found."
+                )
 
         # Script consistency check for Hindi target
         if tgt_lang == "hi":
             hindi_chars = len(re.findall(r"[\u0900-\u097F]", clean_trans))
             if hindi_chars < 5 and len(clean_trans) > 20:
-                raise TranslationValidationError("Expected Devanagari script in translation output but none was found.")
+                raise TranslationValidationError(
+                    "Expected Devanagari script in translation output but none was found."
+                )
 
         return True
 
@@ -121,7 +147,9 @@ class TranslationManager:
         pair = (src_lang, tgt_lang)
         model_name = SUPPORTED_PAIRS.get(pair)
         if not model_name:
-            raise TranslationPairError(f"No direct translation model registered for {src_lang} -> {tgt_lang}")
+            raise TranslationPairError(
+                f"No direct translation model registered for {src_lang} -> {tgt_lang}"
+            )
 
         model, tokenizer = self._get_model(model_name)
         sentences = TextCleaner.segment_sentences(text)
@@ -132,13 +160,12 @@ class TranslationManager:
         for s in sentences:
             if not s.strip():
                 continue
-            inputs = tokenizer([s], return_tensors="pt", truncation=True, max_length=512).to(self.device)
+            inputs = tokenizer(
+                [s], return_tensors="pt", truncation=True, max_length=512
+            ).to(self.device)
             with torch.no_grad():
                 outputs = model.generate(
-                    **inputs,
-                    max_length=512,
-                    num_beams=3,
-                    early_stopping=True
+                    **inputs, max_length=512, num_beams=3, early_stopping=True
                 )
             decoded = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
             # Clean up residual artifacts
@@ -213,7 +240,10 @@ class TranslationManager:
                 "cached": False,
             }
 
-        raise TranslationPairError(f"Translation route from '{src_lang}' to '{tgt_lang}' is currently unavailable.")
+        raise TranslationPairError(
+            f"Translation route from '{src_lang}' to '{tgt_lang}' is currently unavailable."
+        )
+
 
 # Global accessor
 def get_translation_manager() -> TranslationManager:

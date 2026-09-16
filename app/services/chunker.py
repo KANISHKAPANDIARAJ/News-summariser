@@ -1,8 +1,9 @@
 """Sentence-aware chunking pipeline for long document processing."""
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from app.services.text_cleaner import TextCleaner
 from app.utils.logger import logger
+
 
 class SentenceAwareChunker:
     """Splits long text into sentence-coherent chunks with token limits and boundary overlap."""
@@ -42,36 +43,48 @@ class SentenceAwareChunker:
             if sent_tokens > self.max_tokens:
                 if current_chunk_sentences:
                     chunk_text = " ".join(current_chunk_sentences)
-                    chunks.append({
-                        "index": len(chunks),
-                        "text": chunk_text,
-                        "token_count": current_tokens,
-                        "sentence_count": len(current_chunk_sentences)
-                    })
+                    chunks.append(
+                        {
+                            "index": len(chunks),
+                            "text": chunk_text,
+                            "token_count": current_tokens,
+                            "sentence_count": len(current_chunk_sentences),
+                        }
+                    )
                     current_chunk_sentences = []
                     current_tokens = 0
 
-                chunks.append({
-                    "index": len(chunks),
-                    "text": sentence,
-                    "token_count": sent_tokens,
-                    "sentence_count": 1
-                })
+                chunks.append(
+                    {
+                        "index": len(chunks),
+                        "text": sentence,
+                        "token_count": sent_tokens,
+                        "sentence_count": 1,
+                    }
+                )
                 continue
 
             # Check if adding this sentence exceeds token limit
-            if current_tokens + sent_tokens > self.max_tokens and current_chunk_sentences:
+            if (
+                current_tokens + sent_tokens > self.max_tokens
+                and current_chunk_sentences
+            ):
                 chunk_text = " ".join(current_chunk_sentences)
-                chunks.append({
-                    "index": len(chunks),
-                    "text": chunk_text,
-                    "token_count": current_tokens,
-                    "sentence_count": len(current_chunk_sentences)
-                })
+                chunks.append(
+                    {
+                        "index": len(chunks),
+                        "text": chunk_text,
+                        "token_count": current_tokens,
+                        "sentence_count": len(current_chunk_sentences),
+                    }
+                )
 
                 # Maintain sentence overlap for continuity
-                if self.overlap_sentences > 0 and len(current_chunk_sentences) >= self.overlap_sentences:
-                    overlap = current_chunk_sentences[-self.overlap_sentences:]
+                if (
+                    self.overlap_sentences > 0
+                    and len(current_chunk_sentences) >= self.overlap_sentences
+                ):
+                    overlap = current_chunk_sentences[-self.overlap_sentences :]
                     current_chunk_sentences = list(overlap)
                     current_tokens = sum(get_tokens(s) for s in overlap)
                 else:
@@ -83,12 +96,16 @@ class SentenceAwareChunker:
 
         if current_chunk_sentences:
             chunk_text = " ".join(current_chunk_sentences)
-            chunks.append({
-                "index": len(chunks),
-                "text": chunk_text,
-                "token_count": current_tokens,
-                "sentence_count": len(current_chunk_sentences)
-            })
+            chunks.append(
+                {
+                    "index": len(chunks),
+                    "text": chunk_text,
+                    "token_count": current_tokens,
+                    "sentence_count": len(current_chunk_sentences),
+                }
+            )
 
-        logger.debug(f"Chunked document into {len(chunks)} chunks with max_tokens={self.max_tokens}")
+        logger.debug(
+            f"Chunked document into {len(chunks)} chunks with max_tokens={self.max_tokens}"
+        )
         return chunks

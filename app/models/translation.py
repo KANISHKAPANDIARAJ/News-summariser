@@ -1,16 +1,23 @@
 """Translation Database Model."""
 
 import uuid
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 from sqlalchemy import String, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.models.base import Base, TimestampMixin
 
+if TYPE_CHECKING:
+    from app.models.summary import Summary
+
 class Translation(Base, TimestampMixin):
     __tablename__ = "translations"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    summary_id: Mapped[str] = mapped_column(String(36), ForeignKey("summaries.id", ondelete="CASCADE"), index=True)
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    summary_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("summaries.id", ondelete="CASCADE"), index=True
+    )
     source_language: Mapped[str] = mapped_column(String(10), default="en")
     target_language: Mapped[str] = mapped_column(String(10), index=True)
     translated_text: Mapped[str] = mapped_column(Text, nullable=False)

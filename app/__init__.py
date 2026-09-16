@@ -3,6 +3,7 @@
 from pathlib import Path
 
 from flask import Flask, jsonify
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.api.routes.analysis import analysis_bp
 from app.api.routes.articles import articles_bp
@@ -21,6 +22,7 @@ from app.constants import ErrorCodes
 from app.db import init_db
 from app.utils.logger import logger
 from app.web.routes import web_bp
+
 
 def create_app(config_class=None) -> Flask:
     """Application Factory creating and configuring the Flask application."""
@@ -46,8 +48,8 @@ def create_app(config_class=None) -> Flask:
         try:
             init_db()
             logger.info("Database schema initialized successfully.")
-        except Exception as e:
-            logger.error(f"Error initializing database schema: {e}")
+        except SQLAlchemyError as e:
+            logger.error(f"Error initializing database schema: {e!s}")
 
     # Register Blueprints
     app.register_blueprint(web_bp)
@@ -75,29 +77,36 @@ def create_app(config_class=None) -> Flask:
     @app.errorhandler(404)
     def handle_not_found(e):
         if hasattr(app, "test_client") and "api/" in getattr(e, "description", ""):
-            return jsonify(ApiResponse.fail(
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.RESOURCE_NOT_FOUND, message="Resource not found."
+                ).model_dump()
+            ), 404
+        return jsonify(
+            ApiResponse.fail(
                 code=ErrorCodes.RESOURCE_NOT_FOUND,
-                message="Resource not found."
-            ).model_dump()), 404
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.RESOURCE_NOT_FOUND,
-            message="Endpoint or resource not found."
-        ).model_dump()), 404
+                message="Endpoint or resource not found.",
+            ).model_dump()
+        ), 404
 
     @app.errorhandler(413)
     def handle_large_payload(e):
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.VALIDATION_ERROR,
-            message="Request payload exceeds maximum permitted size."
-        ).model_dump()), 413
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.VALIDATION_ERROR,
+                message="Request payload exceeds maximum permitted size.",
+            ).model_dump()
+        ), 413
 
     @app.errorhandler(500)
     def handle_server_error(e):
-        logger.error(f"Unhandled 500 internal server error: {e}")
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.INTERNAL_SERVER_ERROR,
-            message="An unexpected internal server error occurred."
-        ).model_dump()), 500
+        logger.error(f"Unhandled 500 internal server error: {e!s}")
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.INTERNAL_SERVER_ERROR,
+                message="An unexpected internal server error occurred.",
+            ).model_dump()
+        ), 500
 
     logger.info("News Intelligence Platform Application created successfully.")
     return app

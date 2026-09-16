@@ -1,17 +1,24 @@
 """Article Comparison Database Model."""
 
 import uuid
-from typing import Optional, List, Dict, Any
+from typing import List
 from sqlalchemy import String, Float, ForeignKey, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 from app.models.base import Base, TimestampMixin
 
+
 class ArticleComparison(Base, TimestampMixin):
     __tablename__ = "article_comparisons"
 
-    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    article_1_id: Mapped[str] = mapped_column(String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True)
-    article_2_id: Mapped[str] = mapped_column(String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True)
+    id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=lambda: str(uuid.uuid4())
+    )
+    article_1_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True
+    )
+    article_2_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("articles.id", ondelete="CASCADE"), index=True
+    )
     similarity_score: Mapped[float] = mapped_column(Float)
     common_topics: Mapped[List[str]] = mapped_column(JSON, default=list)
     unique_to_first: Mapped[List[str]] = mapped_column(JSON, default=list)

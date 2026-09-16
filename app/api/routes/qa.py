@@ -1,14 +1,18 @@
 """Article Q&A REST API route."""
 
-from flask import Blueprint, request, jsonify
+from __future__ import annotations
+
+from flask import Blueprint, jsonify, request
+
 from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.services.qa_service import ArticleQAService
 from app.services.article_extractor import ArticleExtractor
 from app.services.text_cleaner import TextCleaner
-from app.constants import ErrorCodes
 
 qa_bp = Blueprint("qa_api", __name__)
 extractor = ArticleExtractor()
+
 
 @qa_bp.route("/api/article/ask", methods=["POST"])
 def ask_article():
@@ -19,20 +23,23 @@ def ask_article():
     url = payload.get("url", "").strip()
 
     if not question:
-        return jsonify(ApiResponse.fail(
-            code=ErrorCodes.VALIDATION_ERROR,
-            message="Question cannot be empty."
-        ).model_dump()), 400
+        return jsonify(
+            ApiResponse.fail(
+                code=ErrorCodes.VALIDATION_ERROR, message="Question cannot be empty."
+            ).model_dump()
+        ), 400
 
     if not article_text and url:
         try:
             extracted = extractor.extract(url)
             article_text = extracted.get("text", "")
-        except Exception as e:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
-                message=f"Could not extract article: {e}"
-            ).model_dump()), 400
+        except Exception as e:  # noqa: BLE001
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.ARTICLE_EXTRACTION_FAILED,
+                    message=f"Could not extract article: {e!s}",
+                ).model_dump()
+            ), 400
 
     cleaned = TextCleaner.clean(article_text)
     res = ArticleQAService.answer_question(cleaned, question)

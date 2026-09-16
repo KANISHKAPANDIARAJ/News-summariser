@@ -1,25 +1,24 @@
 """Centralized translation service with language validation, chunking, and caching."""
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 import torch
-from app.constants import SUPPORTED_LANGUAGES, ErrorCodes
+from app.constants import SUPPORTED_LANGUAGES
 from app.ml.model_manager import get_model_manager
 from app.utils.cache import cache, compute_content_hash
 from app.services.text_cleaner import TextCleaner
 from app.utils.logger import logger
 
+
 class TranslationError(Exception):
     pass
+
 
 class TranslationService:
     def __init__(self):
         self.model_manager = get_model_manager()
 
     def translate(
-        self,
-        text: str,
-        target_lang: str,
-        source_lang: str = "en"
+        self, text: str, target_lang: str, source_lang: str = "en"
     ) -> Dict[str, Any]:
         """Translates text into target language respecting sentence boundaries and caching results."""
         if not text or not text.strip():
@@ -63,7 +62,9 @@ class TranslationService:
 
         model, tokenizer = self.model_manager.get_translation_model(target_lang)
         if model is None or tokenizer is None:
-            raise TranslationError(f"Failed to load translation model for language '{target_lang}'.")
+            raise TranslationError(
+                f"Failed to load translation model for language '{target_lang}'."
+            )
 
         # Sentence-by-sentence translation to avoid truncation on longer summaries
         sentences = TextCleaner.segment_sentences(text)
@@ -75,10 +76,14 @@ class TranslationService:
 
         try:
             for s in sentences:
-                inputs = tokenizer([s], return_tensors="pt", truncation=True, max_length=512).to(self.model_manager.device)
+                inputs = tokenizer(
+                    [s], return_tensors="pt", truncation=True, max_length=512
+                ).to(self.model_manager.device)
                 with torch.no_grad():
                     outputs = model.generate(**inputs, max_length=512)
-                translated_s = tokenizer.decode(outputs[0], skip_special_tokens=True).strip()
+                translated_s = tokenizer.decode(
+                    outputs[0], skip_special_tokens=True
+                ).strip()
                 translated_sentences.append(translated_s)
 
             final_translation = " ".join(translated_sentences)

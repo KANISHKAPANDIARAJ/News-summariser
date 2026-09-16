@@ -16,9 +16,12 @@ DEFAULT_HEADERS = {
     "Accept-Language": "en-US,en;q=0.5",
 }
 
+
 class ArticleExtractionError(Exception):
     """Custom exception raised when article content cannot be extracted."""
+
     pass
+
 
 class ArticleExtractor:
     def __init__(self, timeout: int = 15, max_bytes: int = 2 * 1024 * 1024):
@@ -43,14 +46,19 @@ class ArticleExtractor:
         logger.info(f"Trying fallback BeautifulSoup semantic extractor for: {url}")
         result = self._try_beautifulsoup(url)
         if result and len(result.get("text", "").strip()) >= 50:
-            logger.info(f"Article extracted successfully via BeautifulSoup fallback from: {url}")
+            logger.info(
+                f"Article extracted successfully via BeautifulSoup fallback from: {url}"
+            )
             return result
 
-        raise ArticleExtractionError("Unable to extract sufficient article text from the provided URL.")
+        raise ArticleExtractionError(
+            "Unable to extract sufficient article text from the provided URL."
+        )
 
     def _try_newspaper(self, url: str) -> Optional[Dict[str, Any]]:
         try:
             from newspaper import Article
+
             article = Article(url, request_timeout=self.timeout)
             article.download()
             article.parse()
@@ -62,11 +70,14 @@ class ArticleExtractor:
                 "title": article.title or "",
                 "author": ", ".join(article.authors) if article.authors else "",
                 "publisher": urlparse(url).netloc,
-                "published_date": str(article.publish_date) if article.publish_date else "",
+                "published_date": str(article.publish_date)
+                if article.publish_date
+                else "",
                 "url": url,
                 "image_url": article.top_image or "",
                 "text": article.text,
-                "language": article.meta_lang or TextCleaner.detect_language(article.text),
+                "language": article.meta_lang
+                or TextCleaner.detect_language(article.text),
             }
         except Exception as e:
             logger.warning(f"Newspaper3k extraction failed for {url}: {e}")
@@ -85,11 +96,16 @@ class ArticleExtractor:
 
             # Check content length
             content_type = resp.headers.get("Content-Type", "")
-            if "text/html" not in content_type and "application/xhtml" not in content_type:
+            if (
+                "text/html" not in content_type
+                and "application/xhtml" not in content_type
+            ):
                 logger.warning(f"Non-HTML content type for {url}: {content_type}")
                 return None
 
-            content = resp.raw.read(self.max_bytes, decode_content=True).decode("utf-8", errors="replace")
+            content = resp.raw.read(self.max_bytes, decode_content=True).decode(
+                "utf-8", errors="replace"
+            )
             soup = BeautifulSoup(content, "html.parser")
 
             # Extract Title
@@ -116,9 +132,15 @@ class ArticleExtractor:
 
             # Extract Published Date
             published_date = ""
-            meta_time = soup.find("meta", property="article:published_time") or soup.find("time")
+            meta_time = soup.find(
+                "meta", property="article:published_time"
+            ) or soup.find("time")
             if meta_time:
-                published_date = meta_time.get("content") or meta_time.get("datetime") or meta_time.get_text()
+                published_date = (
+                    meta_time.get("content")
+                    or meta_time.get("datetime")
+                    or meta_time.get_text()
+                )
 
             # Extract Image
             image_url = ""
@@ -127,17 +149,29 @@ class ArticleExtractor:
                 image_url = og_image["content"].strip()
 
             # Extract Body Text: Strip scripts, styles, nav, footer
-            for tag in soup(["script", "style", "nav", "footer", "aside", "header", "noscript"]):
+            for tag in soup(
+                ["script", "style", "nav", "footer", "aside", "header", "noscript"]
+            ):
                 tag.decompose()
 
             # Target main article container if available
-            article_body = soup.find("article") or soup.find("main") or soup.find(class_=re.compile(r"article|content|post-body|entry-content", re.I))
+            article_body = (
+                soup.find("article")
+                or soup.find("main")
+                or soup.find(
+                    class_=re.compile(r"article|content|post-body|entry-content", re.I)
+                )
+            )
             source_elem = article_body if article_body else soup.body
 
             if not source_elem:
                 return None
 
-            paragraphs = [p.get_text().strip() for p in source_elem.find_all("p") if len(p.get_text().strip()) > 30]
+            paragraphs = [
+                p.get_text().strip()
+                for p in source_elem.find_all("p")
+                if len(p.get_text().strip()) > 30
+            ]
             raw_text = "\n\n".join(paragraphs)
 
             if len(raw_text.strip()) < 50:

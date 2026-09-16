@@ -1,15 +1,19 @@
 """Report generation endpoints for PDF download."""
 
+from __future__ import annotations
 import io
-from flask import Blueprint, request, send_file, jsonify
+
+from flask import Blueprint, jsonify, request, send_file
+
+from app.api.schemas.common import ApiResponse
+from app.constants import ErrorCodes
 from app.db import get_db_session
 from app.repositories.summary_repo import SummaryRepository
 from app.services.pdf_report import PDFReportGenerator
-from app.api.schemas.common import ApiResponse
-from app.constants import ErrorCodes
 from app.utils.logger import logger
 
 reports_bp = Blueprint("reports_api", __name__)
+
 
 @reports_bp.route("/api/reports/<summary_id>/pdf", methods=["GET"])
 def download_summary_pdf(summary_id: str):
@@ -20,10 +24,12 @@ def download_summary_pdf(summary_id: str):
         repo = SummaryRepository(session)
         summary = repo.get_by_id(summary_id)
         if not summary:
-            return jsonify(ApiResponse.fail(
-                code=ErrorCodes.RESOURCE_NOT_FOUND,
-                message=f"Summary with ID '{summary_id}' not found."
-            ).model_dump()), 404
+            return jsonify(
+                ApiResponse.fail(
+                    code=ErrorCodes.RESOURCE_NOT_FOUND,
+                    message=f"Summary with ID '{summary_id}' not found.",
+                ).model_dump()
+            ), 404
 
         article = summary.article
         analysis = repo.get_analysis_by_article_id(article.id) if article else None
@@ -36,9 +42,17 @@ def download_summary_pdf(summary_id: str):
                 display_summary = trans.translated_text
 
         # Compute dynamic stats
-        orig_words = article.word_count if article else len(article.cleaned_text.split()) if article else 0
+        orig_words = (
+            article.word_count
+            if article
+            else len(article.cleaned_text.split())
+            if article
+            else 0
+        )
         summ_words = len(display_summary.split())
-        comp_ratio = summary.compression_ratio or round((1.0 - (summ_words / max(1, orig_words))) * 100.0, 1)
+        comp_ratio = summary.compression_ratio or round(
+            (1.0 - (summ_words / max(1, orig_words))) * 100.0, 1
+        )
 
         data = {
             "title": article.title if article else "News Intelligence Briefing",
@@ -52,7 +66,9 @@ def download_summary_pdf(summary_id: str):
             "sentiment": {
                 "label": analysis.sentiment_label if analysis else "neutral",
                 "score": analysis.sentiment_score if analysis else 1.0,
-                "distribution": analysis.sentiment_distribution if analysis else {"positive": 0.33, "neutral": 0.34, "negative": 0.33},
+                "distribution": analysis.sentiment_distribution
+                if analysis
+                else {"positive": 0.33, "neutral": 0.34, "negative": 0.33},
             },
             "entities": analysis.entities if analysis else [],
             "keywords": analysis.keywords if analysis else [],
@@ -70,14 +86,17 @@ def download_summary_pdf(summary_id: str):
                 io.BytesIO(pdf_bytes),
                 mimetype="application/pdf",
                 as_attachment=True,
-                download_name=safe_filename
+                download_name=safe_filename,
             )
-        except Exception as e:
-            logger.error(f"Error generating PDF report for {summary_id}: {e}")
-            return jsonify(ApiResponse.fail(
-                code="PDF_GENERATION_FAILED",
-                message=f"Failed to generate PDF: {str(e)}"
-            ).model_dump()), 500
+        except Exception as e:  # noqa: BLE001
+            logger.error(f"Error generating PDF report for {summary_id}: {e!s}")
+            return jsonify(
+                ApiResponse.fail(
+                    code="PDF_GENERATION_FAILED",
+                    message=f"Failed to generate PDF: {e!s}",
+                ).model_dump()
+            ), 500
+
 
 @reports_bp.route("/api/reports/pdf", methods=["POST"])
 def generate_dynamic_pdf():
@@ -91,11 +110,12 @@ def generate_dynamic_pdf():
             io.BytesIO(pdf_bytes),
             mimetype="application/pdf",
             as_attachment=True,
-            download_name=f"news_intelligence_report_{lang}.pdf"
+            download_name=f"news_intelligence_report_{lang}.pdf",
         )
-    except Exception as e:
-        logger.error(f"Dynamic PDF generation error: {e}")
-        return jsonify(ApiResponse.fail(
-            code="PDF_GENERATION_FAILED",
-            message=str(e)
-        ).model_dump()), 500
+    except Exception as e:  # noqa: BLE001
+        logger.error(f"Dynamic PDF generation error: {e!s}")
+        return jsonify(
+            ApiResponse.fail(
+                code="PDF_GENERATION_FAILED", message=f"{e!s}"
+            ).model_dump()
+        ), 500
